@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  impulseapi:
+    image: impulseapi
+    build:
+      context: .
+      dockerfile: ImpulseAPI/Dockerfile
+  mysql:
+    image: mariadb:10.3.5
