@@ -21,7 +21,7 @@ namespace ImpulseAPI.Controllers
         [HttpGet("{id}")]
         public string Get(int id)
         {
-            return "value";
+            return User.Identity.Name;
         }
 
         // POST api/values
