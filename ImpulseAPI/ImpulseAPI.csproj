@@ -19,4 +19,11 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.csproj" />
+    <ProjectReference Include="..\Enums\Enums.csproj" />
+    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+    <ProjectReference Include="..\Providers\Providers.csproj" />
+  </ItemGroup>
+
 </Project>

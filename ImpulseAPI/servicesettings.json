@@ -1,0 +1,10 @@
+﻿{
+  "services": {
+    "telegram": {
+      "apiId": <(int) api id>,
+      "apiHash": <(string) api hash>,
+      "phoneNumber": <(string) phone number>,
+      "botToken": <(string) bot token>
+    }
+  }
+}

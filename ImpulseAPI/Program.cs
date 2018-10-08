@@ -19,6 +19,11 @@ namespace ImpulseAPI
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(Directory.GetCurrentDirectory());
+                    config.AddJsonFile("servicesettings.json");
+                })
                 .UseStartup<Startup>()
                 .Build();
     }

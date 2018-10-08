@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using DataTransferObjects.Configurations;
+using Enums;
+using Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Providers;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace ImpulseAPI
@@ -45,6 +47,10 @@ namespace ImpulseAPI
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Impulse");
             });
 
+            app.Run(async (context) =>
+            {
+                await context.Response.WriteAsync("Default page.");
+            });
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -66,6 +72,23 @@ namespace ImpulseAPI
                 });
 
             services.AddMvc();
+
+            services.Configure<TelegramConfigurationsDto>(Configuration.GetSection("services:telegram"));
+
+            // services
+            services.AddSingleton(typeof(TelegramProvider));
+
+            // provider selector
+            services.AddTransient<Func<Provider, ISocialProvider>>(serviceProvider => key =>
+            {
+                switch (key)
+                {
+                    case Provider.Telegram:
+                        return serviceProvider.GetService<TelegramProvider>();
+                    default:
+                        throw new KeyNotFoundException();
+                }
+            });
 
             services.AddSwaggerGen(c =>
             {
