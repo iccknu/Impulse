@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DataTransferObjects.Configurations;
 using Enums;
+using ImpulseAPI.Extensions;
 using Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -35,6 +36,8 @@ namespace ImpulseAPI
             }
 
             app.UseAuthentication();
+
+            app.ConfigureExceptionHandler();
 
             app.UseMvc();
             app.UseStaticFiles();

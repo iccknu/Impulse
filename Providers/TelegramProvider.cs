@@ -275,7 +275,7 @@ namespace Providers
 
             if (user == null)
             {
-                throw new Exception("Number was not found in Contacts List of user: " + userNumber);
+                throw new Exception("Number '" + userNumber + "' was not found in Contacts List.");
             }
 
             return user;
@@ -294,7 +294,7 @@ namespace Providers
 
             if (channel == null)
             {
-                throw new Exception("Chat was not found in Chat List: " + channelTittle);
+                throw new Exception("Channel '" + channelTittle + "' was not found in Channel List.");
             }
 
             return channel;
