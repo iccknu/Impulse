@@ -2,7 +2,6 @@
 using DataTransferObjects.Social;
 using Interfaces;
 using Microsoft.Extensions.Options;
-using MimeMapping;
 using System;
 using System.IO;
 using System.Linq;
@@ -110,30 +109,28 @@ namespace Providers
                 throw new Exception("Message can't be empty");
 
             var channel = await GetChannelAsync(model.ChannelTitle);
-
             await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value }, model.Message);
         }
 
         public async Task SendFileToUserAsync(FileToUsersDto model)
         {
             TLUser user;
-            TLAbsInputFile fileResult;
+            TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
             foreach (var number in model.UserNumbers)
             {
                 user = await GetUserAsync(number);
 
-                fileResult = await UpLoadFileAsync(model.Path, model.Name);
                 await client.SendUploadedDocument(
                     new TLInputPeerUser() { UserId = user.Id },
                     fileResult,
                     model.Caption,
-                    MimeUtility.GetMimeMapping(model.Name),
+                    model.MimeType,
                     new TLVector<TLAbsDocumentAttribute>()
                     {
-                    new TLDocumentAttributeFilename
-                    {
-                        FileName = model.Name
-                    }
+                        new TLDocumentAttributeFilename
+                        {
+                            FileName = model.Name
+                        }
                     });
             }
         }
@@ -147,7 +144,7 @@ namespace Providers
                 new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
                 fileResult,
                 model.Caption,
-                MimeUtility.GetMimeMapping(model.Name),
+                model.MimeType,
                 new TLVector<TLAbsDocumentAttribute>()
                 {
                     new TLDocumentAttributeFilename
@@ -160,12 +157,10 @@ namespace Providers
         public async Task SendPhotoToUserAsync(FileToUsersDto model)
         {
             TLUser user;
-            TLAbsInputFile fileResult;
+            TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
             foreach (var number in model.UserNumbers)
             {
                 user = await GetUserAsync(number);
-
-                fileResult = await UpLoadFileAsync(model.Path, model.Name);
                 await client.SendUploadedPhoto(new TLInputPeerUser() { UserId = user.Id }, fileResult, model.Caption);
             }
         }
