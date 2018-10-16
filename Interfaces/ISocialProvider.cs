@@ -5,12 +5,13 @@ namespace Interfaces
 {
     public interface ISocialProvider
     {
-        Task SendMessageToUserAsync(MessageToUsersDto model);
+        Task SendMessageToUsersAsync(MessageToUsersDto model);
         Task SendMessageToChannelAsync(MessageToChannelDto model);
-        Task SendPhotoToUserAsync(FileToUsersDto model);
+        Task SendPhotoToUsersAsync(FileToUsersDto model);
         Task SendPhotoToChannelAsync(FileToChannelDto model);
-        Task SendFileToUserAsync(FileToUsersDto model);
+        Task SendFileToUsersAsync(FileToUsersDto model);
         Task SendFileToChannelAsync(FileToChannelDto model);
+        Task AddUserToContactsAsync(UserInfoDto model);
         Task AddUserToChannelAsync(UserManipulationInChannelDto model);
         Task DeleteUserFromChannelAsync(UserManipulationInChannelDto model);
     }

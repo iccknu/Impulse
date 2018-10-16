@@ -90,7 +90,7 @@ namespace Providers
         //    }
         //}
 
-        public async Task SendMessageToUserAsync(MessageToUsersDto model)
+        public async Task SendMessageToUsersAsync(MessageToUsersDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Message))
                 throw new Exception("Message can't be empty");
@@ -112,7 +112,7 @@ namespace Providers
             await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value }, model.Message);
         }
 
-        public async Task SendFileToUserAsync(FileToUsersDto model)
+        public async Task SendFileToUsersAsync(FileToUsersDto model)
         {
             TLUser user;
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
@@ -154,7 +154,7 @@ namespace Providers
                 });
         }
 
-        public async Task SendPhotoToUserAsync(FileToUsersDto model)
+        public async Task SendPhotoToUsersAsync(FileToUsersDto model)
         {
             TLUser user;
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
@@ -224,28 +224,28 @@ namespace Providers
             await client.SendRequestAsync<object>(request);
         }
 
-        public async Task AddUserToContactsAsync(string userNumber, string firstName, string lastName)
+        public async Task AddUserToContactsAsync(UserInfoDto model)
         {
-            if (string.IsNullOrWhiteSpace(userNumber))
+            if (string.IsNullOrWhiteSpace(model.UserNumber))
                 throw new Exception("User number can't be empty");
 
-            if (!Regex.Match(userNumber, phoneNumberPattern).Success)
-                throw new Exception("User number not correct: " + userNumber);
+            if (!Regex.Match(model.UserNumber, phoneNumberPattern).Success)
+                throw new Exception("User number not correct: " + model.UserNumber);
 
             // this is because the contacts in the address come without the "+" prefix
-            var normalizedNumber = userNumber.StartsWith("+") ?
-                userNumber.Substring(1, userNumber.Length - 1) :
-                userNumber;
+            var normalizedNumber = model.UserNumber.StartsWith("+") ?
+                model.UserNumber.Substring(1, model.UserNumber.Length - 1) :
+                model.UserNumber;
 
-            if (string.IsNullOrWhiteSpace(firstName))
+            if (string.IsNullOrWhiteSpace(model.FirstName))
                 throw new Exception("First name can't be empty");
 
-            if (string.IsNullOrWhiteSpace(lastName))
+            if (string.IsNullOrWhiteSpace(model.LastName))
                 throw new Exception("Last name can't be empty");
 
             TLVector<TLInputPhoneContact> contacts = new TLVector<TLInputPhoneContact>
             {
-                new TLInputPhoneContact() { Phone = normalizedNumber, FirstName = firstName, LastName = lastName }
+                new TLInputPhoneContact() { Phone = normalizedNumber, FirstName = model.FirstName, LastName = model.LastName }
             };
 
             var req = new TeleSharp.TL.Contacts.TLRequestImportContacts() { Contacts = contacts };

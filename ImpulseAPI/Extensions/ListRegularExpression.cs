@@ -10,7 +10,11 @@ namespace ImpulseAPI.Extensions
 
         public override bool IsValid(object obj)
         {
-            IEnumerable<string> numbers = (IEnumerable<string>)obj;
+            ICollection<string> numbers = (ICollection<string>)obj;
+
+            if (numbers.Count == 0)
+                return false;
+
             var regex = new Regex(Pattern);
             foreach (string number in numbers)
             {

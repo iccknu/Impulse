@@ -21,14 +21,14 @@ namespace ImpulseAPI.Controllers
             _serviceAccessor = serviceAccessor;
         }
 
-        //POST: api/Social/SendMessageToUser
+        //POST: api/Social/SendMessageToUsersAsync
         [HttpPost("[action]")]
-        public async Task<IActionResult> SendMessageToUser([FromBody]MessageToUsersModel model)
+        public async Task<IActionResult> SendMessageToUsersAsync([FromBody]MessageToUsersModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            await _serviceAccessor(model.Provider).SendMessageToUserAsync(new MessageToUsersDto {
+            await _serviceAccessor(model.Provider).SendMessageToUsersAsync(new MessageToUsersDto {
                 Message = model.Message,
                 UserNumbers = model.UserNumbers,
                 Priority = model.Priority
@@ -37,9 +37,9 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        //POST: api/Social/SendMessageToChannel
+        //POST: api/Social/SendMessageToChannelAsync
         [HttpPost("[action]")]
-        public async Task<IActionResult> SendMessageToChannel([FromBody]MessageToChannelModel model)
+        public async Task<IActionResult> SendMessageToChannelAsync([FromBody]MessageToChannelModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -52,16 +52,16 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        //POST: api/Social/SendPhotoToUser
+        //POST: api/Social/SendPhotoToUsersAsync
         [HttpPost("[action]")]
-        public async Task<IActionResult> SendPhotoToUser([FromForm]FileToUsersModel model)
+        public async Task<IActionResult> SendPhotoToUsersAsync([FromForm]FileToUsersModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string path = await SaveFile(model.File);
+            string path = await SaveFileAsync(model.File);
 
-            await _serviceAccessor(model.Provider).SendPhotoToUserAsync(new FileToUsersDto {
+            await _serviceAccessor(model.Provider).SendPhotoToUsersAsync(new FileToUsersDto {
                 UserNumbers = model.UserNumbers,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
@@ -72,14 +72,14 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        //POST: api/Social/SendPhotoToChannel
+        //POST: api/Social/SendPhotoToChannelAsync
         [HttpPost("[action]")]
-        public async Task<IActionResult> SendPhotoToChannel([FromForm]FileToChannelModel model)
+        public async Task<IActionResult> SendPhotoToChannelAsync([FromForm]FileToChannelModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string path = await SaveFile(model.File);
+            string path = await SaveFileAsync(model.File);
 
             await _serviceAccessor(model.Provider).SendPhotoToChannelAsync(new FileToChannelDto {
                 ChannelTitle = model.ChannelTitle,
@@ -91,16 +91,16 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        //POST: api/Social/SendFileToUser
+        //POST: api/Social/SendFileToUsersAsync
         [HttpPost("[action]")]
-        public async Task<IActionResult> SendFileToUser([FromForm]FileToUsersModel model)
+        public async Task<IActionResult> SendFileToUsersAsync([FromForm]FileToUsersModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string path = await SaveFile(model.File);
+            string path = await SaveFileAsync(model.File);
 
-            await _serviceAccessor(model.Provider).SendFileToUserAsync(new FileToUsersDto {
+            await _serviceAccessor(model.Provider).SendFileToUsersAsync(new FileToUsersDto {
                 UserNumbers = model.UserNumbers,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
@@ -112,14 +112,14 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        //POST: api/Social/SendFileToChannel
+        //POST: api/Social/SendFileToChannelAsync
         [HttpPost("[action]")]
-        public async Task<IActionResult> SendFileToChannel([FromForm]FileToChannelModel model)
+        public async Task<IActionResult> SendFileToChannelAsync([FromForm]FileToChannelModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            string path = await SaveFile(model.File);
+            string path = await SaveFileAsync(model.File);
 
             await _serviceAccessor(model.Provider).SendFileToChannelAsync(new FileToChannelDto {
                 ChannelTitle = model.ChannelTitle,
@@ -132,9 +132,26 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        //POST: api/Social/add
-        [HttpPost("add")]
-        public async Task<IActionResult> AddUserToChannel([FromBody]UserManipulationInChannelModel model)
+        //POST: api/Social/AddUserToContactsAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddUserToContactsAsync([FromBody]UserInfoModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).AddUserToContactsAsync(new UserInfoDto
+            {
+                UserNumber = model.UserNumber,
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/AddUserToChannelAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddUserToChannelAsync([FromBody]UserManipulationInChannelModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -147,9 +164,9 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        // DELETE: api/Social/delete
-        [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteUserFromChannel([FromBody]UserManipulationInChannelModel model)
+        // DELETE: api/Social/DeleteUserFromChannelAsync
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> DeleteUserFromChannelAsync([FromBody]UserManipulationInChannelModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -163,7 +180,7 @@ namespace ImpulseAPI.Controllers
         }
 
         [NonAction]
-        private async Task<string> SaveFile(IFormFile file)
+        private async Task<string> SaveFileAsync(IFormFile file)
         {
             string path = "wwwroot/Files/" + file.FileName;
             using (var stream = new FileStream(path, FileMode.Create))
