@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TeleSharp.TL;
 using TeleSharp.TL.Channels;
+using TeleSharp.TL.Contacts;
 using TeleSharp.TL.Messages;
 using TLSharp.Core;
 using TLSharp.Core.Utils;
@@ -89,7 +90,7 @@ namespace Providers
 
         //    }
         //}
-
+        #region User Methods
         public async Task SendMessageToUsersAsync(MessageToUsersDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Message))
@@ -101,15 +102,6 @@ namespace Providers
                 user = await GetUserAsync(number);
                 await client.SendMessageAsync(new TLInputPeerUser() { UserId = user.Id }, model.Message);
             }
-        }
-
-        public async Task SendMessageToChannelAsync(MessageToChannelDto model)
-        {
-            if (string.IsNullOrWhiteSpace(model.Message))
-                throw new Exception("Message can't be empty");
-
-            var channel = await GetChannelAsync(model.ChannelTitle);
-            await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value }, model.Message);
         }
 
         public async Task SendFileToUsersAsync(FileToUsersDto model)
@@ -135,25 +127,6 @@ namespace Providers
             }
         }
 
-        public async Task SendFileToChannelAsync(FileToChannelDto model)
-        {
-            var channel = await GetChannelAsync(model.ChannelTitle);
-
-            var fileResult = await UpLoadFileAsync(model.Path, model.Name);
-            await client.SendUploadedDocument(
-                new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
-                fileResult,
-                model.Caption,
-                model.MimeType,
-                new TLVector<TLAbsDocumentAttribute>()
-                {
-                    new TLDocumentAttributeFilename
-                    {
-                        FileName = model.Name
-                    }
-                });
-        }
-
         public async Task SendPhotoToUsersAsync(FileToUsersDto model)
         {
             TLUser user;
@@ -163,65 +136,6 @@ namespace Providers
                 user = await GetUserAsync(number);
                 await client.SendUploadedPhoto(new TLInputPeerUser() { UserId = user.Id }, fileResult, model.Caption);
             }
-        }
-
-        public async Task SendPhotoToChannelAsync(FileToChannelDto model)
-        {
-            var channel = await GetChannelAsync(model.ChannelTitle);
-
-            var fileResult = await UpLoadFileAsync(model.Path, model.Name);
-            await client.SendUploadedPhoto(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
-                fileResult, model.Caption);
-        }
-
-        public async Task AddUserToChannelAsync(UserManipulationInChannelDto model)
-        {
-            var user = await GetUserAsync(model.UserNumber);
-            var channel = await GetChannelAsync(model.Channel);
-
-            //generate request of adding
-            var request = new TLRequestInviteToChannel
-            {
-                Channel = new TLInputChannel
-                {
-                    ChannelId = channel.Id,
-                    AccessHash = channel.AccessHash.Value
-                },
-                Users = new TLVector<TLAbsInputUser>
-                {
-                    new TLInputUser
-                    {
-                        UserId = user.Id,
-                        AccessHash = user.AccessHash.Value
-                    }
-                }
-            };
-
-            await client.SendRequestAsync<object>(request);
-        }
-
-        public async Task DeleteUserFromChannelAsync(UserManipulationInChannelDto model)
-        {
-            var user = await GetUserAsync(model.UserNumber);
-            var channel = await GetChannelAsync(model.Channel);
-
-            //generate request of deleting
-            var request = new TLRequestKickFromChannel
-            {
-                Channel = new TLInputChannel
-                {
-                    ChannelId = channel.Id,
-                    AccessHash = channel.AccessHash.Value
-                },
-                UserId = new TLInputUser
-                {
-                    UserId = user.Id,
-                    AccessHash = user.AccessHash.Value
-                },
-                Kicked = true
-            };
-
-            await client.SendRequestAsync<object>(request);
         }
 
         public async Task AddUserToContactsAsync(UserInfoDto model)
@@ -248,11 +162,263 @@ namespace Providers
                 new TLInputPhoneContact() { Phone = normalizedNumber, FirstName = model.FirstName, LastName = model.LastName }
             };
 
-            var req = new TeleSharp.TL.Contacts.TLRequestImportContacts() { Contacts = contacts };
+            var request = new TLRequestImportContacts() { Contacts = contacts };
 
-            var result = await client.SendRequestAsync<TeleSharp.TL.Contacts.TLImportedContacts>(req).ConfigureAwait(false);
+            await client.SendRequestAsync<TLImportedContacts>(request);
+        }
+        #endregion
+
+        #region Channel Methods
+        public async Task SendMessageToChannelAsync(MessageToChannelOrGroupDto model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Message))
+                throw new Exception("Message can't be empty");
+
+            var channel = await GetChannelAsync(model.Title);
+            await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value }, model.Message);
         }
 
+        public async Task SendFileToChannelAsync(FileToChannelOrGroupDto model)
+        {
+            var channel = await GetChannelAsync(model.Title);
+
+            var fileResult = await UpLoadFileAsync(model.Path, model.Name);
+            await client.SendUploadedDocument(
+                new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
+                fileResult,
+                model.Caption,
+                model.MimeType,
+                new TLVector<TLAbsDocumentAttribute>()
+                {
+                    new TLDocumentAttributeFilename
+                    {
+                        FileName = model.Name
+                    }
+                });
+        }
+
+        public async Task SendPhotoToChannelAsync(FileToChannelOrGroupDto model)
+        {
+            var channel = await GetChannelAsync(model.Title);
+
+            var fileResult = await UpLoadFileAsync(model.Path, model.Name);
+            await client.SendUploadedPhoto(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
+                fileResult, model.Caption);
+        }
+
+        public async Task AddUserToChannelAsync(UserManipulationInChannelOrGroupDto model)
+        {
+            var user = await GetUserAsync(model.UserNumber);
+            var channel = await GetChannelAsync(model.Title);
+
+            //generate request of adding
+            var request = new TLRequestInviteToChannel
+            {
+                Channel = new TLInputChannel
+                {
+                    ChannelId = channel.Id,
+                    AccessHash = channel.AccessHash.Value
+                },
+                Users = new TLVector<TLAbsInputUser>
+                {
+                    new TLInputUser
+                    {
+                        UserId = user.Id,
+                        AccessHash = user.AccessHash.Value
+                    }
+                }
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+
+        public async Task DeleteUserFromChannelAsync(UserManipulationInChannelOrGroupDto model)
+        {
+            var user = await GetUserAsync(model.UserNumber);
+            var channel = await GetChannelAsync(model.Title);
+
+            //generate request of deleting
+            var request = new TLRequestKickFromChannel
+            {
+                Channel = new TLInputChannel
+                {
+                    ChannelId = channel.Id,
+                    AccessHash = channel.AccessHash.Value
+                },
+                UserId = new TLInputUser
+                {
+                    UserId = user.Id,
+                    AccessHash = user.AccessHash.Value
+                },
+                Kicked = true
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+
+        public async Task CreateChannelAsync(ChannelOrGroupCreationDto model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Title))
+                throw new Exception("Title can't be empty");
+
+            if (string.IsNullOrWhiteSpace(model.Description))
+                throw new Exception("Description can't be empty");
+
+            var request = new TLRequestCreateChannel()
+            {
+                Title = model.Title,
+                About = model.Description
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+
+        public async Task RemoveChannelAsync(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new Exception("Title can't be empty");
+
+            var channel = await GetChannelAsync(title);
+            var request = new TLRequestDeleteChannel()
+            {
+                Channel = new TLInputChannel
+                {
+                    ChannelId = channel.Id,
+                    AccessHash = channel.AccessHash.Value
+                }
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+        #endregion
+
+        #region Group Methods
+        public async Task SendMessageToGroupAsync(MessageToChannelOrGroupDto model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Message))
+                throw new Exception("Message can't be empty");
+
+            var group = await GetGroupAsync(model.Title);
+            await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value }, model.Message);
+        }
+
+        public async Task SendFileToGroupAsync(FileToChannelOrGroupDto model)
+        {
+            var group = await GetGroupAsync(model.Title);
+
+            var fileResult = await UpLoadFileAsync(model.Path, model.Name);
+            await client.SendUploadedDocument(
+                new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value },
+                fileResult,
+                model.Caption,
+                model.MimeType,
+                new TLVector<TLAbsDocumentAttribute>()
+                {
+                    new TLDocumentAttributeFilename
+                    {
+                        FileName = model.Name
+                    }
+                });
+        }
+
+        public async Task SendPhotoToGroupAsync(FileToChannelOrGroupDto model)
+        {
+            var group = await GetGroupAsync(model.Title);
+
+            var fileResult = await UpLoadFileAsync(model.Path, model.Name);
+            await client.SendUploadedPhoto(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value },
+                fileResult, model.Caption);
+        }
+
+        public async Task AddUserToGroupAsync(UserManipulationInChannelOrGroupDto model)
+        {
+            var user = await GetUserAsync(model.UserNumber);
+            var group = await GetGroupAsync(model.Title);
+
+            //generate request of adding
+            var request = new TLRequestInviteToChannel
+            {
+                Channel = new TLInputChannel
+                {
+                    ChannelId = group.Id,
+                    AccessHash = group.AccessHash.Value
+                },
+                Users = new TLVector<TLAbsInputUser>
+                {
+                    new TLInputUser
+                    {
+                        UserId = user.Id,
+                        AccessHash = user.AccessHash.Value
+                    }
+                }
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+
+        public async Task DeleteUserFromGroupAsync(UserManipulationInChannelOrGroupDto model)
+        {
+            var user = await GetUserAsync(model.UserNumber);
+            var group = await GetGroupAsync(model.Title);
+
+            //generate request of deleting
+            var request = new TLRequestKickFromChannel
+            {
+                Channel = new TLInputChannel
+                {
+                    ChannelId = group.Id,
+                    AccessHash = group.AccessHash.Value
+                },
+                UserId = new TLInputUser
+                {
+                    UserId = user.Id,
+                    AccessHash = user.AccessHash.Value
+                },
+                Kicked = true
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+
+        public async Task CreateGroupAsync(ChannelOrGroupCreationDto model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Title))
+                throw new Exception("Title can't be empty");
+
+            if (string.IsNullOrWhiteSpace(model.Description))
+                throw new Exception("Description can't be empty");
+
+            // using TLRequestCreateChannel we can create SuperGroup/Channel
+            var request = new TLRequestCreateChannel()
+            {
+                Title = model.Title,
+                About = model.Description,
+                Megagroup = true
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+
+        public async Task RemoveGroupAsync(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new Exception("Title can't be empty");
+
+            var group = await GetGroupAsync(title);
+            var request = new TLRequestDeleteChannel()
+            {
+                Channel = new TLInputChannel
+                {
+                    ChannelId = group.Id,
+                    AccessHash = group.AccessHash.Value
+                }
+            };
+
+            await client.SendRequestAsync<object>(request);
+        }
+        #endregion
+
+        #region Private Methods
         private async Task<TLUser> GetUserAsync(string userNumber)
         {
             if (string.IsNullOrWhiteSpace(userNumber))
@@ -266,7 +432,7 @@ namespace Providers
                 userNumber.Substring(1, userNumber.Length - 1) :
                 userNumber;
 
-            //get available contacts
+            // get available contacts
             var result = await client.GetContactsAsync();
 
             var user = result.Users
@@ -281,23 +447,42 @@ namespace Providers
             return user;
         }
 
-        private async Task<TLChannel> GetChannelAsync(string channelTittle)
+        private async Task<TLChannel> GetChannelAsync(string title)
         {
-            if (string.IsNullOrWhiteSpace(channelTittle))
-                throw new Exception("Channel tittle can't be empty");
+            if (string.IsNullOrWhiteSpace(title))
+                throw new Exception("Title can't be empty");
 
-            //get available dialogs
+            // get available dialogs
             var dialogs = (TLDialogs)await client.GetUserDialogsAsync();
             var channel = dialogs.Chats
                 .OfType<TLChannel>()
-                .FirstOrDefault(c => c.Title == channelTittle);
+                .FirstOrDefault(c => c.Title == title);
 
             if (channel == null)
             {
-                throw new Exception("Channel '" + channelTittle + "' was not found in Channel List.");
+                throw new Exception("Channel '" + title + "' was not found in Channel List.");
             }
 
             return channel;
+        }
+
+        private async Task<TLChannel> GetGroupAsync(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new Exception("Title can't be empty");
+
+            // get available dialogs
+            var dialogs = (TLDialogs)await client.GetUserDialogsAsync();
+            var group = dialogs.Chats
+                .OfType<TLChannel>()
+                .FirstOrDefault(c => c.Megagroup && c.Title == title);
+
+            if (group == null)
+            {
+                throw new Exception("Group '" + title + "' was not found in Group List.");
+            }
+
+            return group;
         }
 
         private async Task<TLAbsInputFile> UpLoadFileAsync(string path, string name)
@@ -311,5 +496,6 @@ namespace Providers
 
             return await client.UploadFile(name, new StreamReader(path));
         }
+        #endregion
     }
 }

@@ -21,6 +21,7 @@ namespace ImpulseAPI.Controllers
             _serviceAccessor = serviceAccessor;
         }
 
+        #region User Methods
         //POST: api/Social/SendMessageToUsersAsync
         [HttpPost("[action]")]
         public async Task<IActionResult> SendMessageToUsersAsync([FromBody]MessageToUsersModel model)
@@ -37,21 +38,6 @@ namespace ImpulseAPI.Controllers
             return Ok();
         }
 
-        //POST: api/Social/SendMessageToChannelAsync
-        [HttpPost("[action]")]
-        public async Task<IActionResult> SendMessageToChannelAsync([FromBody]MessageToChannelModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            
-            await _serviceAccessor(model.Provider).SendMessageToChannelAsync(new MessageToChannelDto {
-                ChannelTitle = model.ChannelTitle,
-                Message = model.Message
-            });
-
-            return Ok();
-        }
-
         //POST: api/Social/SendPhotoToUsersAsync
         [HttpPost("[action]")]
         public async Task<IActionResult> SendPhotoToUsersAsync([FromForm]FileToUsersModel model)
@@ -61,31 +47,13 @@ namespace ImpulseAPI.Controllers
 
             string path = await SaveFileAsync(model.File);
 
-            await _serviceAccessor(model.Provider).SendPhotoToUsersAsync(new FileToUsersDto {
+            await _serviceAccessor(model.Provider).SendPhotoToUsersAsync(new FileToUsersDto
+            {
                 UserNumbers = model.UserNumbers,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
                 Path = path,
                 Priority = model.Priority
-            });
-
-            return Ok();
-        }
-
-        //POST: api/Social/SendPhotoToChannelAsync
-        [HttpPost("[action]")]
-        public async Task<IActionResult> SendPhotoToChannelAsync([FromForm]FileToChannelModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            string path = await SaveFileAsync(model.File);
-
-            await _serviceAccessor(model.Provider).SendPhotoToChannelAsync(new FileToChannelDto {
-                ChannelTitle = model.ChannelTitle,
-                Name = model.File.FileName,
-                Caption = model.Caption ?? "",
-                Path = path
             });
 
             return Ok();
@@ -100,33 +68,14 @@ namespace ImpulseAPI.Controllers
 
             string path = await SaveFileAsync(model.File);
 
-            await _serviceAccessor(model.Provider).SendFileToUsersAsync(new FileToUsersDto {
+            await _serviceAccessor(model.Provider).SendFileToUsersAsync(new FileToUsersDto
+            {
                 UserNumbers = model.UserNumbers,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
                 MimeType = model.File.ContentType,
                 Path = path,
                 Priority = model.Priority
-            });
-
-            return Ok();
-        }
-
-        //POST: api/Social/SendFileToChannelAsync
-        [HttpPost("[action]")]
-        public async Task<IActionResult> SendFileToChannelAsync([FromForm]FileToChannelModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            string path = await SaveFileAsync(model.File);
-
-            await _serviceAccessor(model.Provider).SendFileToChannelAsync(new FileToChannelDto {
-                ChannelTitle = model.ChannelTitle,
-                Name = model.File.FileName,
-                Caption = model.Caption ?? "",
-                MimeType = model.File.ContentType,
-                Path = path
             });
 
             return Ok();
@@ -148,17 +97,73 @@ namespace ImpulseAPI.Controllers
 
             return Ok();
         }
+        #endregion
 
-        //POST: api/Social/AddUserToChannelAsync
+        #region Channel Methods
+        //POST: api/Social/SendMessageToChannelAsync
         [HttpPost("[action]")]
-        public async Task<IActionResult> AddUserToChannelAsync([FromBody]UserManipulationInChannelModel model)
+        public async Task<IActionResult> SendMessageToChannelAsync([FromBody]MessageToChannelOrGroupModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             
-            await _serviceAccessor(model.Provider).AddUserToChannelAsync(new UserManipulationInChannelDto {
+            await _serviceAccessor(model.Provider).SendMessageToChannelAsync(new MessageToChannelOrGroupDto {
+                Title = model.Title,
+                Message = model.Message
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/SendPhotoToChannelAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SendPhotoToChannelAsync([FromForm]FileToChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string path = await SaveFileAsync(model.File);
+
+            await _serviceAccessor(model.Provider).SendPhotoToChannelAsync(new FileToChannelOrGroupDto {
+                Title = model.Title,
+                Name = model.File.FileName,
+                Caption = model.Caption ?? "",
+                Path = path
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/SendFileToChannelAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SendFileToChannelAsync([FromForm]FileToChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string path = await SaveFileAsync(model.File);
+
+            await _serviceAccessor(model.Provider).SendFileToChannelAsync(new FileToChannelOrGroupDto {
+                Title = model.Title,
+                Name = model.File.FileName,
+                Caption = model.Caption ?? "",
+                MimeType = model.File.ContentType,
+                Path = path
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/AddUserToChannelAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddUserToChannelAsync([FromBody]UserManipulationInChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            
+            await _serviceAccessor(model.Provider).AddUserToChannelAsync(new UserManipulationInChannelOrGroupDto {
                 UserNumber = model.UserNumber,
-                Channel = model.Channel
+                Title = model.Title
             });
 
             return Ok();
@@ -166,18 +171,166 @@ namespace ImpulseAPI.Controllers
 
         // DELETE: api/Social/DeleteUserFromChannelAsync
         [HttpDelete("[action]")]
-        public async Task<IActionResult> DeleteUserFromChannelAsync([FromBody]UserManipulationInChannelModel model)
+        public async Task<IActionResult> DeleteUserFromChannelAsync([FromBody]UserManipulationInChannelOrGroupModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             
-            await _serviceAccessor(model.Provider).DeleteUserFromChannelAsync(new UserManipulationInChannelDto {
+            await _serviceAccessor(model.Provider).DeleteUserFromChannelAsync(new UserManipulationInChannelOrGroupDto {
                 UserNumber = model.UserNumber,
-                Channel = model.Channel
+                Title = model.Title
             });
 
             return Ok();
         }
+
+        //POST: api/Social/CreateChannelAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> CreateChannelAsync([FromBody]ChannelOrGroupCreationModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).CreateChannelAsync(new ChannelOrGroupCreationDto
+            {
+                Title = model.Title,
+                Description = model.Description
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/RemoveChannelAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> RemoveChannelAsync([FromBody]ChannelOrGroupRemovingModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).RemoveChannelAsync(model.Title);
+
+            return Ok();
+        }
+        #endregion
+
+        #region Group Methods
+        //POST: api/Social/SendMessageToGroupAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SendMessageToGroupAsync([FromBody]MessageToChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).SendMessageToGroupAsync(new MessageToChannelOrGroupDto
+            {
+                Title = model.Title,
+                Message = model.Message
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/SendPhotoToGroupAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SendPhotoToGroupAsync([FromForm]FileToChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string path = await SaveFileAsync(model.File);
+
+            await _serviceAccessor(model.Provider).SendPhotoToGroupAsync(new FileToChannelOrGroupDto
+            {
+                Title = model.Title,
+                Name = model.File.FileName,
+                Caption = model.Caption ?? "",
+                Path = path
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/SendFileToGroupAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SendFileToGroupAsync([FromForm]FileToChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string path = await SaveFileAsync(model.File);
+
+            await _serviceAccessor(model.Provider).SendFileToGroupAsync(new FileToChannelOrGroupDto
+            {
+                Title = model.Title,
+                Name = model.File.FileName,
+                Caption = model.Caption ?? "",
+                MimeType = model.File.ContentType,
+                Path = path
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/AddUserToGroupAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AddUserToGroupAsync([FromBody]UserManipulationInChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).AddUserToGroupAsync(new UserManipulationInChannelOrGroupDto
+            {
+                UserNumber = model.UserNumber,
+                Title = model.Title
+            });
+
+            return Ok();
+        }
+
+        // DELETE: api/Social/DeleteUserFromGroupAsync
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> DeleteUserFromGroupAsync([FromBody]UserManipulationInChannelOrGroupModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).DeleteUserFromGroupAsync(new UserManipulationInChannelOrGroupDto
+            {
+                UserNumber = model.UserNumber,
+                Title = model.Title
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/CreateGroupAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> CreateGroupAsync([FromBody]ChannelOrGroupCreationModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).CreateGroupAsync(new ChannelOrGroupCreationDto
+            {
+                Title = model.Title,
+                Description = model.Description
+            });
+
+            return Ok();
+        }
+
+        //POST: api/Social/RemoveGroupAsync
+        [HttpPost("[action]")]
+        public async Task<IActionResult> RemoveGroupAsync([FromBody]ChannelOrGroupRemovingModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _serviceAccessor(model.Provider).RemoveGroupAsync(model.Title);
+
+            return Ok();
+        }
+        #endregion
 
         [NonAction]
         private async Task<string> SaveFileAsync(IFormFile file)

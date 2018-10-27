@@ -1,8 +1,8 @@
 ﻿namespace DataTransferObjects.Social
 {
-    public class MessageToChannelDto
+    public class MessageToChannelOrGroupDto
     {
-        public string ChannelTitle { get; set; }
+        public string Title { get; set; }
         public string Message { get; set; }
     }
 }

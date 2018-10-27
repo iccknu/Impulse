@@ -1,8 +1,8 @@
 ﻿namespace DataTransferObjects.Social
 {
-    public class UserManipulationInChannelDto
+    public class UserManipulationInChannelOrGroupDto
     {
         public string UserNumber { get; set; }
-        public string Channel { get; set; }
+        public string Title { get; set; }
     }
 }

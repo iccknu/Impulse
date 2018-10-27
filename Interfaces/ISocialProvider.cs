@@ -6,13 +6,24 @@ namespace Interfaces
     public interface ISocialProvider
     {
         Task SendMessageToUsersAsync(MessageToUsersDto model);
-        Task SendMessageToChannelAsync(MessageToChannelDto model);
         Task SendPhotoToUsersAsync(FileToUsersDto model);
-        Task SendPhotoToChannelAsync(FileToChannelDto model);
         Task SendFileToUsersAsync(FileToUsersDto model);
-        Task SendFileToChannelAsync(FileToChannelDto model);
         Task AddUserToContactsAsync(UserInfoDto model);
-        Task AddUserToChannelAsync(UserManipulationInChannelDto model);
-        Task DeleteUserFromChannelAsync(UserManipulationInChannelDto model);
+
+        Task SendMessageToChannelAsync(MessageToChannelOrGroupDto model);
+        Task SendPhotoToChannelAsync(FileToChannelOrGroupDto model);
+        Task SendFileToChannelAsync(FileToChannelOrGroupDto model);
+        Task AddUserToChannelAsync(UserManipulationInChannelOrGroupDto model);
+        Task DeleteUserFromChannelAsync(UserManipulationInChannelOrGroupDto model);
+        Task CreateChannelAsync(ChannelOrGroupCreationDto model);
+        Task RemoveChannelAsync(string title);
+
+        Task SendMessageToGroupAsync(MessageToChannelOrGroupDto model);
+        Task SendPhotoToGroupAsync(FileToChannelOrGroupDto model);
+        Task SendFileToGroupAsync(FileToChannelOrGroupDto model);
+        Task AddUserToGroupAsync(UserManipulationInChannelOrGroupDto model);
+        Task DeleteUserFromGroupAsync(UserManipulationInChannelOrGroupDto model);
+        Task CreateGroupAsync(ChannelOrGroupCreationDto model);
+        Task RemoveGroupAsync(string title);
     }
 }

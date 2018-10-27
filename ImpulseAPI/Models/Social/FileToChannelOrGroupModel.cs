@@ -4,10 +4,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ImpulseAPI.Models.Social
 {
-    public class FileToChannelModel
+    public class FileToChannelOrGroupModel
     {
-        [Required(ErrorMessage = "Channel tittle can't be empty")]
-        public string ChannelTitle { get; set; }
+        [Required(ErrorMessage = "Title can't be empty")]
+        public string Title { get; set; }
 
         [Required(ErrorMessage = "File is required.")]
         public IFormFile File { get; set; }
