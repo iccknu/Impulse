@@ -4,5 +4,4 @@ services:
   - docker
 
 before_install:
-  - cd ImpulseAPI
-  - docker build -t test:test .
+  -  docker build -t test:test -f ImpulseAPI/Dockerfile .
