@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using TeleSharp.TL;
 using TeleSharp.TL.Channels;
@@ -20,6 +21,7 @@ namespace Providers
     {
         private readonly TelegramConfigurationsDto _telegramConfigurations;
         private readonly TelegramClient client;
+        private const int DileyTime = 10 * 1000;
 
         public TelegramProvider(IOptions<TelegramConfigurationsDto> telegramConfigurations)
         {
@@ -91,28 +93,21 @@ namespace Providers
         //    }
         //}
         #region User Methods
-        public async Task SendMessageToUsersAsync(MessageToUsersDto model)
+        public async Task SendMessageToUserAsync(MessageToUserDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Message))
                 throw new Exception("Message can't be empty");
 
-            TLUser user;
-            foreach (var number in model.UserNumbers)
-            {
-                user = await GetUserAsync(number);
-                await client.SendMessageAsync(new TLInputPeerUser() { UserId = user.Id }, model.Message);
-            }
+            TLUser user = await GetUserAsync(model.UserNumber);
+            await client.SendMessageAsync(new TLInputPeerUser() { UserId = user.Id }, model.Message);
+            Thread.Sleep(DileyTime);
         }
 
-        public async Task SendFileToUsersAsync(FileToUsersDto model)
+        public async Task SendFileToUserAsync(FileToUserDto model)
         {
-            TLUser user;
+            TLUser user = await GetUserAsync(model.UserNumber);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
-            foreach (var number in model.UserNumbers)
-            {
-                user = await GetUserAsync(number);
-
-                await client.SendUploadedDocument(
+            await client.SendUploadedDocument(
                     new TLInputPeerUser() { UserId = user.Id },
                     fileResult,
                     model.Caption,
@@ -124,18 +119,15 @@ namespace Providers
                             FileName = model.Name
                         }
                     });
-            }
+            Thread.Sleep(DileyTime);
         }
 
-        public async Task SendPhotoToUsersAsync(FileToUsersDto model)
+        public async Task SendPhotoToUserAsync(FileToUserDto model)
         {
-            TLUser user;
+            TLUser user = await GetUserAsync(model.UserNumber);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
-            foreach (var number in model.UserNumbers)
-            {
-                user = await GetUserAsync(number);
-                await client.SendUploadedPhoto(new TLInputPeerUser() { UserId = user.Id }, fileResult, model.Caption);
-            }
+            await client.SendUploadedPhoto(new TLInputPeerUser() { UserId = user.Id }, fileResult, model.Caption);
+            Thread.Sleep(DileyTime);
         }
 
         public async Task AddUserToContactsAsync(UserInfoDto model)
@@ -176,6 +168,7 @@ namespace Providers
 
             var channel = await GetChannelAsync(model.Title);
             await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value }, model.Message);
+            Thread.Sleep(DileyTime);
         }
 
         public async Task SendFileToChannelAsync(FileToChannelOrGroupDto model)
@@ -195,6 +188,7 @@ namespace Providers
                         FileName = model.Name
                     }
                 });
+            Thread.Sleep(DileyTime);
         }
 
         public async Task SendPhotoToChannelAsync(FileToChannelOrGroupDto model)
@@ -204,6 +198,7 @@ namespace Providers
             var fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedPhoto(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
                 fileResult, model.Caption);
+            Thread.Sleep(DileyTime);
         }
 
         public async Task AddUserToChannelAsync(UserManipulationInChannelOrGroupDto model)
@@ -300,6 +295,7 @@ namespace Providers
 
             var group = await GetGroupAsync(model.Title);
             await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value }, model.Message);
+            Thread.Sleep(DileyTime);
         }
 
         public async Task SendFileToGroupAsync(FileToChannelOrGroupDto model)
@@ -319,6 +315,7 @@ namespace Providers
                         FileName = model.Name
                     }
                 });
+            Thread.Sleep(DileyTime);
         }
 
         public async Task SendPhotoToGroupAsync(FileToChannelOrGroupDto model)
@@ -328,6 +325,7 @@ namespace Providers
             var fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedPhoto(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value },
                 fileResult, model.Caption);
+            Thread.Sleep(DileyTime);
         }
 
         public async Task AddUserToGroupAsync(UserManipulationInChannelOrGroupDto model)

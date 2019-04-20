@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DataTransferObjects.Social;
 using Enums;
+using Hangfire;
 using ImpulseAPI.Models.Social;
 using Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -15,10 +17,20 @@ namespace ImpulseAPI.Controllers
     public class SocialController : ControllerBase
     {
         private readonly Func<Provider, ISocialProvider> _serviceAccessor;
+        private static Dictionary<Provider, string> parentIds;
 
         public SocialController(Func<Provider, ISocialProvider> serviceAccessor)
         {
             _serviceAccessor = serviceAccessor;
+        }
+
+        static SocialController()
+        {
+            parentIds = new Dictionary<Provider, string>();
+            foreach (var provider in (Provider[])Enum.GetValues(typeof(Provider)))
+            {
+                parentIds[provider] = null;
+            }
         }
 
         #region User Methods
@@ -29,11 +41,33 @@ namespace ImpulseAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            await _serviceAccessor(model.Provider).SendMessageToUsersAsync(new MessageToUsersDto {
+            ISocialProvider provider = _serviceAccessor(model.Provider);
+            MessageToUserDto messageToUser = new MessageToUserDto
+            {
                 Message = model.Message,
-                UserNumbers = model.UserNumbers,
                 Priority = model.Priority
-            });
+            };
+
+            using (IEnumerator<string> enumer = model.UserNumbers.GetEnumerator())
+            {
+                if (enumer.MoveNext())
+                {
+                    if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
+                        JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
+                    {
+                        messageToUser.UserNumber = enumer.Current;
+                        parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendMessageToUserAsync(messageToUser));
+                        if (!enumer.MoveNext())
+                            return Ok();
+                    }
+
+                    do
+                    {
+                        messageToUser.UserNumber = enumer.Current;
+                        parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendMessageToUserAsync(messageToUser));
+                    } while (enumer.MoveNext());
+                }
+            }
 
             return Ok();
         }
@@ -46,15 +80,35 @@ namespace ImpulseAPI.Controllers
                 return BadRequest(ModelState);
 
             string path = await SaveFileAsync(model.File);
-
-            await _serviceAccessor(model.Provider).SendPhotoToUsersAsync(new FileToUsersDto
+            ISocialProvider provider = _serviceAccessor(model.Provider);
+            FileToUserDto fileToUser = new FileToUserDto
             {
-                UserNumbers = model.UserNumbers,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
                 Path = path,
                 Priority = model.Priority
-            });
+            };
+            
+            using (IEnumerator<string> enumer = model.UserNumbers.GetEnumerator())
+            {
+                if (enumer.MoveNext())
+                {
+                    if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
+                        JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
+                    {
+                        fileToUser.UserNumber = enumer.Current;
+                        parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendPhotoToUserAsync(fileToUser));
+                        if (!enumer.MoveNext())
+                            return Ok();
+                    }
+
+                    do
+                    {
+                        fileToUser.UserNumber = enumer.Current;
+                        parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendPhotoToUserAsync(fileToUser));
+                    } while (enumer.MoveNext());
+                }
+            }
 
             return Ok();
         }
@@ -67,16 +121,36 @@ namespace ImpulseAPI.Controllers
                 return BadRequest(ModelState);
 
             string path = await SaveFileAsync(model.File);
-
-            await _serviceAccessor(model.Provider).SendFileToUsersAsync(new FileToUsersDto
+            ISocialProvider provider = _serviceAccessor(model.Provider);
+            FileToUserDto fileToUser = new FileToUserDto
             {
-                UserNumbers = model.UserNumbers,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
                 MimeType = model.File.ContentType,
                 Path = path,
                 Priority = model.Priority
-            });
+            };
+
+            using (IEnumerator<string> enumer = model.UserNumbers.GetEnumerator())
+            {
+                if (enumer.MoveNext())
+                {
+                    if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
+                        JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
+                    {
+                        fileToUser.UserNumber = enumer.Current;
+                        parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendFileToUserAsync(fileToUser));
+                        if (!enumer.MoveNext())
+                            return Ok();
+                    }
+
+                    do
+                    {
+                        fileToUser.UserNumber = enumer.Current;
+                        parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendFileToUserAsync(fileToUser));
+                    } while (enumer.MoveNext());
+                }
+            }
 
             return Ok();
         }
@@ -106,8 +180,9 @@ namespace ImpulseAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            await _serviceAccessor(model.Provider).SendMessageToChannelAsync(new MessageToChannelOrGroupDto {
+            // 10 messagese per minute
+            await _serviceAccessor(model.Provider).SendMessageToChannelAsync(new MessageToChannelOrGroupDto
+            {
                 Title = model.Title,
                 Message = model.Message
             });
@@ -124,7 +199,8 @@ namespace ImpulseAPI.Controllers
 
             string path = await SaveFileAsync(model.File);
 
-            await _serviceAccessor(model.Provider).SendPhotoToChannelAsync(new FileToChannelOrGroupDto {
+            await _serviceAccessor(model.Provider).SendPhotoToChannelAsync(new FileToChannelOrGroupDto
+            {
                 Title = model.Title,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
@@ -143,7 +219,8 @@ namespace ImpulseAPI.Controllers
 
             string path = await SaveFileAsync(model.File);
 
-            await _serviceAccessor(model.Provider).SendFileToChannelAsync(new FileToChannelOrGroupDto {
+            await _serviceAccessor(model.Provider).SendFileToChannelAsync(new FileToChannelOrGroupDto
+            {
                 Title = model.Title,
                 Name = model.File.FileName,
                 Caption = model.Caption ?? "",
@@ -160,8 +237,9 @@ namespace ImpulseAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            await _serviceAccessor(model.Provider).AddUserToChannelAsync(new UserManipulationInChannelOrGroupDto {
+
+            await _serviceAccessor(model.Provider).AddUserToChannelAsync(new UserManipulationInChannelOrGroupDto
+            {
                 UserNumber = model.UserNumber,
                 Title = model.Title
             });
@@ -175,8 +253,9 @@ namespace ImpulseAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            await _serviceAccessor(model.Provider).DeleteUserFromChannelAsync(new UserManipulationInChannelOrGroupDto {
+
+            await _serviceAccessor(model.Provider).DeleteUserFromChannelAsync(new UserManipulationInChannelOrGroupDto
+            {
                 UserNumber = model.UserNumber,
                 Title = model.Title
             });

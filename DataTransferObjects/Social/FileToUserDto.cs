@@ -1,11 +1,10 @@
 ﻿using Enums;
-using System.Collections.Generic;
 
 namespace DataTransferObjects.Social
 {
-    public class FileToUsersDto
+    public class FileToUserDto
     {
-        public IEnumerable<string> UserNumbers { get; set; }
+        public string UserNumber { get; set; }
         public string Caption { get; set; }
         public string MimeType { get; set; }
         public string Path { get; set; }

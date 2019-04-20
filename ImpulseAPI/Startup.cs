@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DataTransferObjects.Configurations;
 using Enums;
+using Hangfire;
 using ImpulseAPI.Extensions;
 using Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -50,6 +51,12 @@ namespace ImpulseAPI
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Impulse");
             });
 
+            app.UseHangfireServer();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new MyAuthorizationFilter() }
+            });
+
             app.Run(async (context) =>
             {
                 await context.Response.WriteAsync("Default page.");
@@ -75,6 +82,8 @@ namespace ImpulseAPI
                 });
 
             services.AddMvc();
+
+            services.AddHangfire(x => x.UseSqlServerStorage("Server=DESKTOP-1D0TUK1\\SQLEXPRESS;Database=Impulse;Trusted_Connection=True;MultipleActiveResultSets=true"));
 
             services.Configure<TelegramConfigurationsDto>(Configuration.GetSection("services:telegram"));
 
