@@ -48,14 +48,14 @@ namespace ImpulseAPI.Controllers
                 Priority = model.Priority
             };
 
-            using (IEnumerator<string> enumer = model.UserNumbers.GetEnumerator())
+            using (IEnumerator<string> enumer = model.EmailOrUserNumbers.GetEnumerator())
             {
                 if (enumer.MoveNext())
                 {
                     if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
                         JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
                     {
-                        messageToUser.UserNumber = enumer.Current;
+                        messageToUser.EmailOrUserNumber = enumer.Current;
                         parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendMessageToUserAsync(messageToUser));
                         if (!enumer.MoveNext())
                             return Ok();
@@ -63,7 +63,7 @@ namespace ImpulseAPI.Controllers
 
                     do
                     {
-                        messageToUser.UserNumber = enumer.Current;
+                        messageToUser.EmailOrUserNumber = enumer.Current;
                         parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendMessageToUserAsync(messageToUser));
                     } while (enumer.MoveNext());
                 }
@@ -89,14 +89,14 @@ namespace ImpulseAPI.Controllers
                 Priority = model.Priority
             };
             
-            using (IEnumerator<string> enumer = model.UserNumbers.GetEnumerator())
+            using (IEnumerator<string> enumer = model.EmailOrUserNumbers.GetEnumerator())
             {
                 if (enumer.MoveNext())
                 {
                     if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
                         JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
                     {
-                        fileToUser.UserNumber = enumer.Current;
+                        fileToUser.EmailOrUserNumber = enumer.Current;
                         parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendPhotoToUserAsync(fileToUser));
                         if (!enumer.MoveNext())
                             return Ok();
@@ -104,7 +104,7 @@ namespace ImpulseAPI.Controllers
 
                     do
                     {
-                        fileToUser.UserNumber = enumer.Current;
+                        fileToUser.EmailOrUserNumber = enumer.Current;
                         parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendPhotoToUserAsync(fileToUser));
                     } while (enumer.MoveNext());
                 }
@@ -131,14 +131,14 @@ namespace ImpulseAPI.Controllers
                 Priority = model.Priority
             };
 
-            using (IEnumerator<string> enumer = model.UserNumbers.GetEnumerator())
+            using (IEnumerator<string> enumer = model.EmailOrUserNumbers.GetEnumerator())
             {
                 if (enumer.MoveNext())
                 {
                     if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
                         JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
                     {
-                        fileToUser.UserNumber = enumer.Current;
+                        fileToUser.EmailOrUserNumber = enumer.Current;
                         parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendFileToUserAsync(fileToUser));
                         if (!enumer.MoveNext())
                             return Ok();
@@ -146,7 +146,7 @@ namespace ImpulseAPI.Controllers
 
                     do
                     {
-                        fileToUser.UserNumber = enumer.Current;
+                        fileToUser.EmailOrUserNumber = enumer.Current;
                         parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendFileToUserAsync(fileToUser));
                     } while (enumer.MoveNext());
                 }

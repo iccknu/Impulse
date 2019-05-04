@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Providers;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
@@ -10,15 +11,15 @@ namespace ImpulseAPI.Extensions
 
         public override bool IsValid(object obj)
         {
-            ICollection<string> numbers = (ICollection<string>)obj;
+            ICollection<string> emailsOrNumbers = (ICollection<string>)obj;
 
-            if (numbers.Count == 0)
+            if (emailsOrNumbers.Count == 0)
                 return false;
 
             var regex = new Regex(Pattern);
-            foreach (string number in numbers)
+            foreach (string emailsOrNumber in emailsOrNumbers)
             {
-                if (!regex.IsMatch(number))
+                if (!regex.IsMatch(emailsOrNumber) && !EmailProvider.IsValidEmail(emailsOrNumber))
                 {
                     return false;
                 }

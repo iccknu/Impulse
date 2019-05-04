@@ -2,6 +2,7 @@
 {
     public enum Provider
     {
-        Telegram
+        Telegram,
+        Email
     };
 }

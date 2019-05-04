@@ -6,5 +6,6 @@
         public string ApiHash { get; set; }
         public string PhoneNumber { get; set; }
         public string BotToken { get; set; }
+        public float MessagesPerSecond { get; set; }
     }
 }

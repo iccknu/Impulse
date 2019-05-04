@@ -21,13 +21,14 @@ namespace Providers
     {
         private readonly TelegramConfigurationsDto _telegramConfigurations;
         private readonly TelegramClient client;
-        private const int DileyTime = 10 * 1000;
+        private readonly int DileyTime;
 
         public TelegramProvider(IOptions<TelegramConfigurationsDto> telegramConfigurations)
         {
             _telegramConfigurations = telegramConfigurations.Value;
             client = new TelegramClient(_telegramConfigurations.ApiId, _telegramConfigurations.ApiHash);
             client.ConnectAsync().Wait();
+            DileyTime = (int)(1000 / _telegramConfigurations.MessagesPerSecond);
         }
 
         private const string phoneNumberPattern = @"^(\+?380)(50|66|95|99|63|73|93|91|92|94|67|68|96|97|98|39)[0-9]{7}$";
@@ -37,7 +38,7 @@ namespace Providers
         //    var client = TClient.Client;
         //    string phoneNumber = ConfigurationManager.AppSettings["PhoneNumber"];
         //    if (string.IsNullOrEmpty(phoneNumber))
-        //        throw new Exception(string.Format(appConfigMsgWarning, "PhoneNumber"));
+        //        throw new ArgumentException(string.Format(appConfigMsgWarning, "PhoneNumber"));
 
         //    //Task only for debug
         //    Task t = Task.Run(async () =>
@@ -96,16 +97,16 @@ namespace Providers
         public async Task SendMessageToUserAsync(MessageToUserDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Message))
-                throw new Exception("Message can't be empty");
+                throw new ArgumentException("Message can't be empty");
 
-            TLUser user = await GetUserAsync(model.UserNumber);
+            TLUser user = await GetUserAsync(model.EmailOrUserNumber);
             await client.SendMessageAsync(new TLInputPeerUser() { UserId = user.Id }, model.Message);
             Thread.Sleep(DileyTime);
         }
 
         public async Task SendFileToUserAsync(FileToUserDto model)
         {
-            TLUser user = await GetUserAsync(model.UserNumber);
+            TLUser user = await GetUserAsync(model.EmailOrUserNumber);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedDocument(
                     new TLInputPeerUser() { UserId = user.Id },
@@ -124,7 +125,7 @@ namespace Providers
 
         public async Task SendPhotoToUserAsync(FileToUserDto model)
         {
-            TLUser user = await GetUserAsync(model.UserNumber);
+            TLUser user = await GetUserAsync(model.EmailOrUserNumber);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedPhoto(new TLInputPeerUser() { UserId = user.Id }, fileResult, model.Caption);
             Thread.Sleep(DileyTime);
@@ -133,10 +134,10 @@ namespace Providers
         public async Task AddUserToContactsAsync(UserInfoDto model)
         {
             if (string.IsNullOrWhiteSpace(model.UserNumber))
-                throw new Exception("User number can't be empty");
+                throw new ArgumentException("User number can't be empty");
 
             if (!Regex.Match(model.UserNumber, phoneNumberPattern).Success)
-                throw new Exception("User number not correct: " + model.UserNumber);
+                throw new ArgumentException("User number not correct: " + model.UserNumber);
 
             // this is because the contacts in the address come without the "+" prefix
             var normalizedNumber = model.UserNumber.StartsWith("+") ?
@@ -144,10 +145,10 @@ namespace Providers
                 model.UserNumber;
 
             if (string.IsNullOrWhiteSpace(model.FirstName))
-                throw new Exception("First name can't be empty");
+                throw new ArgumentException("First name can't be empty");
 
             if (string.IsNullOrWhiteSpace(model.LastName))
-                throw new Exception("Last name can't be empty");
+                throw new ArgumentException("Last name can't be empty");
 
             TLVector<TLInputPhoneContact> contacts = new TLVector<TLInputPhoneContact>
             {
@@ -164,7 +165,7 @@ namespace Providers
         public async Task SendMessageToChannelAsync(MessageToChannelOrGroupDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Message))
-                throw new Exception("Message can't be empty");
+                throw new ArgumentException("Message can't be empty");
 
             var channel = await GetChannelAsync(model.Title);
             await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value }, model.Message);
@@ -254,10 +255,10 @@ namespace Providers
         public async Task CreateChannelAsync(ChannelOrGroupCreationDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Title))
-                throw new Exception("Title can't be empty");
+                throw new ArgumentException("Title can't be empty");
 
             if (string.IsNullOrWhiteSpace(model.Description))
-                throw new Exception("Description can't be empty");
+                throw new ArgumentException("Description can't be empty");
 
             var request = new TLRequestCreateChannel()
             {
@@ -271,7 +272,7 @@ namespace Providers
         public async Task RemoveChannelAsync(string title)
         {
             if (string.IsNullOrWhiteSpace(title))
-                throw new Exception("Title can't be empty");
+                throw new ArgumentException("Title can't be empty");
 
             var channel = await GetChannelAsync(title);
             var request = new TLRequestDeleteChannel()
@@ -291,7 +292,7 @@ namespace Providers
         public async Task SendMessageToGroupAsync(MessageToChannelOrGroupDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Message))
-                throw new Exception("Message can't be empty");
+                throw new ArgumentException("Message can't be empty");
 
             var group = await GetGroupAsync(model.Title);
             await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value }, model.Message);
@@ -381,10 +382,10 @@ namespace Providers
         public async Task CreateGroupAsync(ChannelOrGroupCreationDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Title))
-                throw new Exception("Title can't be empty");
+                throw new ArgumentException("Title can't be empty");
 
             if (string.IsNullOrWhiteSpace(model.Description))
-                throw new Exception("Description can't be empty");
+                throw new ArgumentException("Description can't be empty");
 
             // using TLRequestCreateChannel we can create SuperGroup/Channel
             var request = new TLRequestCreateChannel()
@@ -400,7 +401,7 @@ namespace Providers
         public async Task RemoveGroupAsync(string title)
         {
             if (string.IsNullOrWhiteSpace(title))
-                throw new Exception("Title can't be empty");
+                throw new ArgumentException("Title can't be empty");
 
             var group = await GetGroupAsync(title);
             var request = new TLRequestDeleteChannel()
@@ -420,10 +421,10 @@ namespace Providers
         private async Task<TLUser> GetUserAsync(string userNumber)
         {
             if (string.IsNullOrWhiteSpace(userNumber))
-                throw new Exception("User number can't be empty.");
+                throw new ArgumentException("User number can't be empty.");
 
             if (!Regex.Match(userNumber, phoneNumberPattern).Success)
-                throw new Exception("User number not correct: " + userNumber);
+                throw new ArgumentException("User number not correct: " + userNumber);
 
             // this is because the contacts in the address come without the "+" prefix
             var normalizedNumber = userNumber.StartsWith("+") ?
@@ -448,7 +449,7 @@ namespace Providers
         private async Task<TLChannel> GetChannelAsync(string title)
         {
             if (string.IsNullOrWhiteSpace(title))
-                throw new Exception("Title can't be empty");
+                throw new ArgumentException("Title can't be empty");
 
             // get available dialogs
             var dialogs = (TLDialogs)await client.GetUserDialogsAsync();
@@ -467,7 +468,7 @@ namespace Providers
         private async Task<TLChannel> GetGroupAsync(string title)
         {
             if (string.IsNullOrWhiteSpace(title))
-                throw new Exception("Title can't be empty");
+                throw new ArgumentException("Title can't be empty");
 
             // get available dialogs
             var dialogs = (TLDialogs)await client.GetUserDialogsAsync();
@@ -486,11 +487,11 @@ namespace Providers
         private async Task<TLAbsInputFile> UpLoadFileAsync(string path, string name)
         {
             if (string.IsNullOrEmpty(path))
-                throw new Exception("Path can't be empty");
+                throw new ArgumentException("Path can't be empty");
             if (string.IsNullOrEmpty(name))
-                throw new Exception("Name can't be empty");
+                throw new ArgumentException("Name can't be empty");
             if (!File.Exists(path))
-                throw new Exception("Could not find file " + path);
+                throw new ArgumentException("Could not find file " + path);
 
             return await client.UploadFile(name, new StreamReader(path));
         }
