@@ -10,6 +10,10 @@ namespace ImpulseAPI.Models.Social
         [ListRegularExpression(@"^(\+?380)(50|66|95|99|63|73|93|91|92|94|67|68|96|97|98|39)[0-9]{7}$", ErrorMessage = "Email or User number is not correct")]
         public IEnumerable<string> EmailOrUserNumbers { get; set; }
 
+        public string SenderName { get; set; }
+
+        public string Subject { get; set; }
+
         [Required(ErrorMessage = "Message can't be empty")]
         public string Message { get; set; }
 

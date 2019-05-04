@@ -8,6 +8,10 @@ namespace ImpulseAPI.Models.Social
         [Required(ErrorMessage = "Title can't be empty")]
         public string Title { get; set; }
 
+        public string SenderName { get; set; }
+
+        public string Subject { get; set; }
+
         [Required(ErrorMessage = "Message can't be empty")]
         public string Message { get; set; }
 

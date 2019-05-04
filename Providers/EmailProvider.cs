@@ -36,7 +36,7 @@ namespace Providers
 
             MimeMessage message = new MimeMessage
             {
-                Subject = "Subject",
+                Subject = model.Subject,
                 Body = new TextPart(TextFormat.Plain)
                 {
                     Text = model.Message
@@ -44,7 +44,7 @@ namespace Providers
             };
 
             message.To.Add(new MailboxAddress("User", model.EmailOrUserNumber));
-            message.From.Add(new MailboxAddress("Test", _emailConfigurations.Email));
+            message.From.Add(new MailboxAddress(model.SenderName, _emailConfigurations.Email));
             
 
             using (SmtpClient emailClient = new SmtpClient())
@@ -74,12 +74,12 @@ namespace Providers
 
             MimeMessage message = new MimeMessage
             {
-                Subject = "Subject",
+                Subject = model.Subject,
                 Body = bodyBuilder.ToMessageBody()
             };
 
             message.To.Add(new MailboxAddress("User", model.EmailOrUserNumber));
-            message.From.Add(new MailboxAddress("Test", _emailConfigurations.Email));
+            message.From.Add(new MailboxAddress(model.SenderName, _emailConfigurations.Email));
 
 
             using (SmtpClient emailClient = new SmtpClient())
@@ -109,12 +109,12 @@ namespace Providers
 
             MimeMessage message = new MimeMessage
             {
-                Subject = "Subject",
+                Subject = model.Subject,
                 Body = bodyBuilder.ToMessageBody()
             };
 
             message.To.Add(new MailboxAddress("User", model.EmailOrUserNumber));
-            message.From.Add(new MailboxAddress("Test", _emailConfigurations.Email));
+            message.From.Add(new MailboxAddress(model.SenderName, _emailConfigurations.Email));
 
 
             using (SmtpClient emailClient = new SmtpClient())

@@ -44,6 +44,8 @@ namespace ImpulseAPI.Controllers
             ISocialProvider provider = _serviceAccessor(model.Provider);
             MessageToUserDto messageToUser = new MessageToUserDto
             {
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Message = model.Message,
                 Priority = model.Priority
             };
@@ -84,6 +86,8 @@ namespace ImpulseAPI.Controllers
             FileToUserDto fileToUser = new FileToUserDto
             {
                 Name = model.File.FileName,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Caption = model.Caption ?? "",
                 Path = path,
                 Priority = model.Priority
@@ -125,6 +129,8 @@ namespace ImpulseAPI.Controllers
             FileToUserDto fileToUser = new FileToUserDto
             {
                 Name = model.File.FileName,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Caption = model.Caption ?? "",
                 MimeType = model.File.ContentType,
                 Path = path,
@@ -184,6 +190,8 @@ namespace ImpulseAPI.Controllers
             await _serviceAccessor(model.Provider).SendMessageToChannelAsync(new MessageToChannelOrGroupDto
             {
                 Title = model.Title,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Message = model.Message
             });
 
@@ -203,6 +211,8 @@ namespace ImpulseAPI.Controllers
             {
                 Title = model.Title,
                 Name = model.File.FileName,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Caption = model.Caption ?? "",
                 Path = path
             });
@@ -223,6 +233,8 @@ namespace ImpulseAPI.Controllers
             {
                 Title = model.Title,
                 Name = model.File.FileName,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Caption = model.Caption ?? "",
                 MimeType = model.File.ContentType,
                 Path = path
@@ -303,6 +315,8 @@ namespace ImpulseAPI.Controllers
             await _serviceAccessor(model.Provider).SendMessageToGroupAsync(new MessageToChannelOrGroupDto
             {
                 Title = model.Title,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Message = model.Message
             });
 
@@ -322,6 +336,8 @@ namespace ImpulseAPI.Controllers
             {
                 Title = model.Title,
                 Name = model.File.FileName,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Caption = model.Caption ?? "",
                 Path = path
             });
@@ -342,6 +358,8 @@ namespace ImpulseAPI.Controllers
             {
                 Title = model.Title,
                 Name = model.File.FileName,
+                SenderName = model.SenderName,
+                Subject = model.Subject,
                 Caption = model.Caption ?? "",
                 MimeType = model.File.ContentType,
                 Path = path

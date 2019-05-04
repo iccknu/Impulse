@@ -12,6 +12,10 @@ namespace ImpulseAPI.Models.Social
         [Required(ErrorMessage = "File is required.")]
         public IFormFile File { get; set; }
 
+        public string SenderName { get; set; }
+
+        public string Subject { get; set; }
+
         public string Caption { get; set; }
 
         [EnumDataType(typeof(Provider), ErrorMessage = "This social provider not registered yet.")]

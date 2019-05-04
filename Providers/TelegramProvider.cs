@@ -100,7 +100,9 @@ namespace Providers
                 throw new ArgumentException("Message can't be empty");
 
             TLUser user = await GetUserAsync(model.EmailOrUserNumber);
-            await client.SendMessageAsync(new TLInputPeerUser() { UserId = user.Id }, model.Message);
+            await client.SendMessageAsync(new TLInputPeerUser() {
+                UserId = user.Id
+            }, MessageBuilder(model.SenderName, model.Subject, model.Message));
             Thread.Sleep(DileyTime);
         }
 
@@ -111,7 +113,7 @@ namespace Providers
             await client.SendUploadedDocument(
                     new TLInputPeerUser() { UserId = user.Id },
                     fileResult,
-                    model.Caption,
+                    MessageBuilder(model.SenderName, model.Subject, model.Caption),
                     model.MimeType,
                     new TLVector<TLAbsDocumentAttribute>()
                     {
@@ -127,7 +129,9 @@ namespace Providers
         {
             TLUser user = await GetUserAsync(model.EmailOrUserNumber);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
-            await client.SendUploadedPhoto(new TLInputPeerUser() { UserId = user.Id }, fileResult, model.Caption);
+            await client.SendUploadedPhoto(new TLInputPeerUser() {
+                UserId = user.Id
+            }, fileResult, MessageBuilder(model.SenderName, model.Subject, model.Caption));
             Thread.Sleep(DileyTime);
         }
 
@@ -168,7 +172,10 @@ namespace Providers
                 throw new ArgumentException("Message can't be empty");
 
             var channel = await GetChannelAsync(model.Title);
-            await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value }, model.Message);
+            await client.SendMessageAsync(new TLInputPeerChannel() {
+                ChannelId = channel.Id,
+                AccessHash = channel.AccessHash.Value
+            }, MessageBuilder(model.SenderName, model.Subject, model.Message));
             Thread.Sleep(DileyTime);
         }
 
@@ -180,7 +187,7 @@ namespace Providers
             await client.SendUploadedDocument(
                 new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
                 fileResult,
-                model.Caption,
+                MessageBuilder(model.SenderName, model.Subject, model.Caption),
                 model.MimeType,
                 new TLVector<TLAbsDocumentAttribute>()
                 {
@@ -198,7 +205,7 @@ namespace Providers
 
             var fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedPhoto(new TLInputPeerChannel() { ChannelId = channel.Id, AccessHash = channel.AccessHash.Value },
-                fileResult, model.Caption);
+                fileResult, MessageBuilder(model.SenderName, model.Subject, model.Caption));
             Thread.Sleep(DileyTime);
         }
 
@@ -295,7 +302,10 @@ namespace Providers
                 throw new ArgumentException("Message can't be empty");
 
             var group = await GetGroupAsync(model.Title);
-            await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value }, model.Message);
+            await client.SendMessageAsync(new TLInputPeerChannel() {
+                ChannelId = group.Id,
+                AccessHash = group.AccessHash.Value
+            }, MessageBuilder(model.SenderName, model.Subject, model.Message));
             Thread.Sleep(DileyTime);
         }
 
@@ -307,7 +317,7 @@ namespace Providers
             await client.SendUploadedDocument(
                 new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value },
                 fileResult,
-                model.Caption,
+                MessageBuilder(model.SenderName, model.Subject, model.Caption),
                 model.MimeType,
                 new TLVector<TLAbsDocumentAttribute>()
                 {
@@ -325,7 +335,7 @@ namespace Providers
 
             var fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedPhoto(new TLInputPeerChannel() { ChannelId = group.Id, AccessHash = group.AccessHash.Value },
-                fileResult, model.Caption);
+                fileResult, MessageBuilder(model.SenderName, model.Subject, model.Caption));
             Thread.Sleep(DileyTime);
         }
 
@@ -482,6 +492,26 @@ namespace Providers
             }
 
             return group;
+        }
+
+        private string MessageBuilder(string senderName, string subject, string messageText)
+        {
+            string message = messageText;
+            bool isSenderNameExists = !string.IsNullOrEmpty(senderName);
+            bool isSubjectExists = !string.IsNullOrEmpty(subject);
+
+            if (isSenderNameExists || isSubjectExists)
+            {
+                message = "Повідомлення:\n" + message;
+
+                if (isSubjectExists)
+                    message = "Тема:\n" + subject + "\n\n" + message;
+
+                if (isSenderNameExists)
+                    message = "Від:\n" + senderName + "\n\n" + message;
+            }
+
+            return message;
         }
 
         private async Task<TLAbsInputFile> UpLoadFileAsync(string path, string name)
