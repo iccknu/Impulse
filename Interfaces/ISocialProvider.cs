@@ -25,5 +25,7 @@ namespace Interfaces
         Task DeleteUserFromGroupAsync(UserManipulationInChannelOrGroupDto model);
         Task CreateGroupAsync(ChannelOrGroupCreationDto model);
         Task RemoveGroupAsync(string title);
+
+        Task<UserCheckResult> UserCheck(string emailOrUserNumber);
     }
 }

@@ -177,6 +177,17 @@ namespace Providers
             => throw new NotImplementedException("This method is not supported in email");
         #endregion
 
+        public async Task<UserCheckResult> UserCheck(string emailOrUserNumber)
+        {
+            bool isEmailValid = IsValidEmail(emailOrUserNumber);
+            return new UserCheckResult
+            {
+                EmailOrUserNumber = emailOrUserNumber,
+                IsValid = isEmailValid,
+                ErrorMessage = isEmailValid ? null : "Email is not valid"
+            };
+        }
+
         #region Static Methods
         // From: https://docs.microsoft.com/en-us/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
         public static bool IsValidEmail(string email)

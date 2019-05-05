@@ -427,6 +427,28 @@ namespace Providers
         }
         #endregion
 
+        public async Task<UserCheckResult> UserCheck(string emailOrUserNumber)
+        {
+            bool isValid = true;
+            string errorMessage = null;
+            try
+            {
+                await GetUserAsync(emailOrUserNumber);
+            }
+            catch (Exception ex)
+            {
+                isValid = false;
+                errorMessage = ex.Message;
+            }
+
+            return new UserCheckResult
+            {
+                EmailOrUserNumber = emailOrUserNumber,
+                IsValid = isValid,
+                ErrorMessage = errorMessage
+            };
+        }
+
         #region Private Methods
         private async Task<TLUser> GetUserAsync(string userNumber)
         {

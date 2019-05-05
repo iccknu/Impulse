@@ -9,6 +9,7 @@ using ImpulseAPI.Models.Social;
 using Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace ImpulseAPI.Controllers
 {
@@ -41,6 +42,9 @@ namespace ImpulseAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            UserCheckResult userCheckResult;
+            List<UserCheckResult> userCheckResults = new List<UserCheckResult>();
+
             ISocialProvider provider = _serviceAccessor(model.Provider);
             MessageToUserDto messageToUser = new MessageToUserDto
             {
@@ -57,21 +61,31 @@ namespace ImpulseAPI.Controllers
                     if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
                         JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
                     {
-                        messageToUser.EmailOrUserNumber = enumer.Current;
-                        parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendMessageToUserAsync(messageToUser));
+                        userCheckResult = await provider.UserCheck(enumer.Current);
+                        userCheckResults.Add(userCheckResult);
+                        if (userCheckResult.IsValid)
+                        {
+                            messageToUser.EmailOrUserNumber = enumer.Current;
+                            parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendMessageToUserAsync(messageToUser));
+                        }
                         if (!enumer.MoveNext())
-                            return Ok();
+                            return Ok(JsonConvert.SerializeObject(userCheckResults));
                     }
 
                     do
                     {
-                        messageToUser.EmailOrUserNumber = enumer.Current;
-                        parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendMessageToUserAsync(messageToUser));
+                        userCheckResult = await provider.UserCheck(enumer.Current);
+                        userCheckResults.Add(userCheckResult);
+                        if (userCheckResult.IsValid)
+                        {
+                            messageToUser.EmailOrUserNumber = enumer.Current;
+                            parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendMessageToUserAsync(messageToUser));
+                        }
                     } while (enumer.MoveNext());
                 }
             }
 
-            return Ok();
+            return Ok(JsonConvert.SerializeObject(userCheckResults));
         }
 
         //POST: api/Social/SendPhotoToUsersAsync
@@ -80,6 +94,9 @@ namespace ImpulseAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            UserCheckResult userCheckResult;
+            List<UserCheckResult> userCheckResults = new List<UserCheckResult>();
 
             string path = await SaveFileAsync(model.File);
             ISocialProvider provider = _serviceAccessor(model.Provider);
@@ -100,21 +117,31 @@ namespace ImpulseAPI.Controllers
                     if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
                         JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
                     {
-                        fileToUser.EmailOrUserNumber = enumer.Current;
-                        parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendPhotoToUserAsync(fileToUser));
+                        userCheckResult = await provider.UserCheck(enumer.Current);
+                        userCheckResults.Add(userCheckResult);
+                        if (userCheckResult.IsValid)
+                        {
+                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendPhotoToUserAsync(fileToUser));
+                        }
                         if (!enumer.MoveNext())
-                            return Ok();
+                            return Ok(JsonConvert.SerializeObject(userCheckResults));
                     }
 
                     do
                     {
-                        fileToUser.EmailOrUserNumber = enumer.Current;
-                        parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendPhotoToUserAsync(fileToUser));
+                        userCheckResult = await provider.UserCheck(enumer.Current);
+                        userCheckResults.Add(userCheckResult);
+                        if (userCheckResult.IsValid)
+                        {
+                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendPhotoToUserAsync(fileToUser));
+                        }
                     } while (enumer.MoveNext());
                 }
             }
 
-            return Ok();
+            return Ok(JsonConvert.SerializeObject(userCheckResults));
         }
 
         //POST: api/Social/SendFileToUsersAsync
@@ -123,6 +150,9 @@ namespace ImpulseAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            UserCheckResult userCheckResult;
+            List<UserCheckResult> userCheckResults = new List<UserCheckResult>();
 
             string path = await SaveFileAsync(model.File);
             ISocialProvider provider = _serviceAccessor(model.Provider);
@@ -144,21 +174,31 @@ namespace ImpulseAPI.Controllers
                     if (string.IsNullOrEmpty(parentIds[model.Provider]) ||
                         JobStorage.Current.GetMonitoringApi().JobDetails(parentIds[model.Provider]) == null)
                     {
-                        fileToUser.EmailOrUserNumber = enumer.Current;
-                        parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendFileToUserAsync(fileToUser));
+                        userCheckResult = await provider.UserCheck(enumer.Current);
+                        userCheckResults.Add(userCheckResult);
+                        if (userCheckResult.IsValid)
+                        {
+                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendFileToUserAsync(fileToUser));
+                        }
                         if (!enumer.MoveNext())
-                            return Ok();
+                            return Ok(JsonConvert.SerializeObject(userCheckResults));
                     }
 
                     do
                     {
-                        fileToUser.EmailOrUserNumber = enumer.Current;
-                        parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendFileToUserAsync(fileToUser));
+                        userCheckResult = await provider.UserCheck(enumer.Current);
+                        userCheckResults.Add(userCheckResult);
+                        if (userCheckResult.IsValid)
+                        {
+                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendFileToUserAsync(fileToUser));
+                        }
                     } while (enumer.MoveNext());
                 }
             }
 
-            return Ok();
+            return Ok(JsonConvert.SerializeObject(userCheckResults));
         }
 
         //POST: api/Social/AddUserToContactsAsync
@@ -186,7 +226,7 @@ namespace ImpulseAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            // 10 messagese per minute
+            
             await _serviceAccessor(model.Provider).SendMessageToChannelAsync(new MessageToChannelOrGroupDto
             {
                 Title = model.Title,
