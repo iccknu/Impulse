@@ -10,6 +10,7 @@ using Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ImpulseAPI.Controllers
 {
@@ -32,6 +33,20 @@ namespace ImpulseAPI.Controllers
             {
                 parentIds[provider] = null;
             }
+        }
+
+        //GET: api/Social/GetProviders
+        /// <summary>
+        /// Get all provider names (In methods possible to use both string names and indexes)
+        /// </summary>
+        /// <returns>Array of all provider names</returns>
+        [HttpGet("[action]")]
+        public JsonResult GetProviders()
+        {
+            Array providers = Enum.GetValues(typeof(Provider));
+            JsonSerializerSettings convertSettings = new JsonSerializerSettings();
+            convertSettings.Converters.Add(new StringEnumConverter());
+            return new JsonResult(providers, convertSettings);
         }
 
         //POST: api/Social/RegisterTelegramService

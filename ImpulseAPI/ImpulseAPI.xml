@@ -4,6 +4,12 @@
         <name>ImpulseAPI</name>
     </assembly>
     <members>
+        <member name="M:ImpulseAPI.Controllers.SocialController.GetProviders">
+            <summary>
+            Get all provider names (In methods possible to use both string names and indexes)
+            </summary>
+            <returns>Array of all provider names</returns>
+        </member>
         <member name="M:ImpulseAPI.Controllers.SocialController.RegisterTelegramService(System.String)">
             <summary>
             Authorizing the user for getting more access to API 
