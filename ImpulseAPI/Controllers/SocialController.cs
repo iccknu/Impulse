@@ -35,6 +35,11 @@ namespace ImpulseAPI.Controllers
         }
 
         //POST: api/Social/RegisterTelegramService
+        /// <summary>
+        /// Authorizing the user for getting more access to API 
+        /// </summary>
+        /// <param name="code">Code that will be send on your phone after first call without parameter</param>
+        /// <returns></returns>
         [HttpPost("[action]/{code?}")]
         public async Task<IActionResult> RegisterTelegramService([FromRoute]string code = null)
         {
@@ -210,6 +215,11 @@ namespace ImpulseAPI.Controllers
         }
 
         //POST: api/Social/AddUserToContactsAsync
+        /// <summary>
+        /// Before making any manipulations with users, you need to add them in your contact list
+        /// </summary>
+        /// <param name="model">Model with information needed for provider</param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         public async Task<IActionResult> AddUserToContactsAsync([FromBody]UserInfoModel model)
         {

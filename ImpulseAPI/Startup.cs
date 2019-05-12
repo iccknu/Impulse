@@ -112,11 +112,9 @@ namespace ImpulseAPI
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Impulse", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new ApiKeyScheme { In = "header", Description = "Please enter JWT with Bearer into field", Name = "Authorization", Type = "apiKey" });
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
-                { "Bearer", Enumerable.Empty<string>() },
-                });
+                c.SwaggerDoc("v1", new Info { Title = "Impulse", Version = "v1",
+                    Description = "Program for sending notifications through different communication channels (such as Telegram, Slack and similar)." });
+                c.IncludeXmlComments(AppDomain.CurrentDomain.BaseDirectory + "ImpulseAPI.xml");
             });
         }
     }
