@@ -31,8 +31,8 @@ namespace Providers
             if (string.IsNullOrWhiteSpace(model.Message))
                 throw new ArgumentException("Message can't be empty");
 
-            if (!IsValidEmail(model.EmailOrUserNumber))
-                throw new ArgumentException("Invalid email");
+            if (!IsValidEmail(model.Login))
+                throw new ArgumentException("Login is not a valid email: " + model.Login);
 
             MimeMessage message = new MimeMessage
             {
@@ -43,7 +43,7 @@ namespace Providers
                 }
             };
 
-            message.To.Add(new MailboxAddress("User", model.EmailOrUserNumber));
+            message.To.Add(new MailboxAddress("User", model.Login));
             message.From.Add(new MailboxAddress(model.SenderName, _emailConfigurations.Email));
             
 
@@ -59,8 +59,8 @@ namespace Providers
 
         public async Task SendFileToUserAsync(FileToUserDto model)
         {
-            if (!IsValidEmail(model.EmailOrUserNumber))
-                throw new ArgumentException("Invalid email");
+            if (!IsValidEmail(model.Login))
+                throw new ArgumentException("Login is not a valid email: " + model.Login);
             if (string.IsNullOrEmpty(model.Path))
                 throw new ArgumentException("Path can't be empty");
             if (!File.Exists(model.Path))
@@ -78,7 +78,7 @@ namespace Providers
                 Body = bodyBuilder.ToMessageBody()
             };
 
-            message.To.Add(new MailboxAddress("User", model.EmailOrUserNumber));
+            message.To.Add(new MailboxAddress("User", model.Login));
             message.From.Add(new MailboxAddress(model.SenderName, _emailConfigurations.Email));
 
 
@@ -94,8 +94,8 @@ namespace Providers
 
         public async Task SendPhotoToUserAsync(FileToUserDto model)
         {
-            if (!IsValidEmail(model.EmailOrUserNumber))
-                throw new ArgumentException("Invalid email");
+            if (!IsValidEmail(model.Login))
+                throw new ArgumentException("Login is not a valid email: " + model.Login);
             if (string.IsNullOrEmpty(model.Path))
                 throw new ArgumentException("Path can't be empty");
             if (!File.Exists(model.Path))
@@ -113,7 +113,7 @@ namespace Providers
                 Body = bodyBuilder.ToMessageBody()
             };
 
-            message.To.Add(new MailboxAddress("User", model.EmailOrUserNumber));
+            message.To.Add(new MailboxAddress("User", model.Login));
             message.From.Add(new MailboxAddress(model.SenderName, _emailConfigurations.Email));
 
 
@@ -177,14 +177,14 @@ namespace Providers
             => throw new NotImplementedException("This method is not supported in email");
         #endregion
 
-        public async Task<UserCheckResult> UserCheck(string emailOrUserNumber)
+        public async Task<UserCheckResultDto> UserCheck(string login)
         {
-            bool isEmailValid = IsValidEmail(emailOrUserNumber);
-            return new UserCheckResult
+            bool isEmailValid = IsValidEmail(login);
+            return new UserCheckResultDto
             {
-                EmailOrUserNumber = emailOrUserNumber,
+                Login = login,
                 IsValid = isEmailValid,
-                ErrorMessage = isEmailValid ? null : "Email is not valid"
+                ErrorMessage = isEmailValid ? null : "Login is not a valid email"
             };
         }
 

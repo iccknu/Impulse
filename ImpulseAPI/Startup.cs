@@ -86,10 +86,12 @@ namespace ImpulseAPI
             services.AddHangfire(x => x.UseSqlServerStorage("Server=DESKTOP-1D0TUK1\\SQLEXPRESS;Database=Impulse;Trusted_Connection=True;MultipleActiveResultSets=true"));
 
             services.Configure<TelegramConfigurationsDto>(Configuration.GetSection("services:telegram"));
+            services.Configure<SlackConfigurationsDto>(Configuration.GetSection("services:slack"));
             services.Configure<EmailConfigurationsDto>(Configuration.GetSection("services:email"));
 
             // services
             services.AddSingleton(typeof(TelegramProvider));
+            services.AddSingleton(typeof(SlackProvider));
             services.AddSingleton(typeof(EmailProvider));
 
             // provider selector
@@ -99,6 +101,8 @@ namespace ImpulseAPI
                 {
                     case Provider.Telegram:
                         return serviceProvider.GetService<TelegramProvider>();
+                    case Provider.Slack:
+                        return serviceProvider.GetService<SlackProvider>();
                     case Provider.Email:
                         return serviceProvider.GetService<EmailProvider>();
                     default:

@@ -1,8 +1,8 @@
 ﻿namespace DataTransferObjects.Social
 {
-    public class UserCheckResult
+    public class UserCheckResultDto
     {
-        public string EmailOrUserNumber { get; set; }
+        public string Login { get; set; }
         public bool IsValid { get; set; }
         public string ErrorMessage { get; set; }
     }

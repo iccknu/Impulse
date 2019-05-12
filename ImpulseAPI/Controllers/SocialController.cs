@@ -42,8 +42,8 @@ namespace ImpulseAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            UserCheckResult userCheckResult;
-            List<UserCheckResult> userCheckResults = new List<UserCheckResult>();
+            UserCheckResultDto userCheckResult;
+            List<UserCheckResultDto> userCheckResults = new List<UserCheckResultDto>();
 
             ISocialProvider provider = _serviceAccessor(model.Provider);
             MessageToUserDto messageToUser = new MessageToUserDto
@@ -54,7 +54,7 @@ namespace ImpulseAPI.Controllers
                 Priority = model.Priority
             };
 
-            using (IEnumerator<string> enumer = model.EmailOrUserNumbers.GetEnumerator())
+            using (IEnumerator<string> enumer = model.Logins.GetEnumerator())
             {
                 if (enumer.MoveNext())
                 {
@@ -65,7 +65,7 @@ namespace ImpulseAPI.Controllers
                         userCheckResults.Add(userCheckResult);
                         if (userCheckResult.IsValid)
                         {
-                            messageToUser.EmailOrUserNumber = enumer.Current;
+                            messageToUser.Login = enumer.Current;
                             parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendMessageToUserAsync(messageToUser));
                         }
                         if (!enumer.MoveNext())
@@ -78,7 +78,7 @@ namespace ImpulseAPI.Controllers
                         userCheckResults.Add(userCheckResult);
                         if (userCheckResult.IsValid)
                         {
-                            messageToUser.EmailOrUserNumber = enumer.Current;
+                            messageToUser.Login = enumer.Current;
                             parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendMessageToUserAsync(messageToUser));
                         }
                     } while (enumer.MoveNext());
@@ -95,8 +95,8 @@ namespace ImpulseAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            UserCheckResult userCheckResult;
-            List<UserCheckResult> userCheckResults = new List<UserCheckResult>();
+            UserCheckResultDto userCheckResult;
+            List<UserCheckResultDto> userCheckResults = new List<UserCheckResultDto>();
 
             string path = await SaveFileAsync(model.File);
             ISocialProvider provider = _serviceAccessor(model.Provider);
@@ -110,7 +110,7 @@ namespace ImpulseAPI.Controllers
                 Priority = model.Priority
             };
             
-            using (IEnumerator<string> enumer = model.EmailOrUserNumbers.GetEnumerator())
+            using (IEnumerator<string> enumer = model.Logins.GetEnumerator())
             {
                 if (enumer.MoveNext())
                 {
@@ -121,7 +121,7 @@ namespace ImpulseAPI.Controllers
                         userCheckResults.Add(userCheckResult);
                         if (userCheckResult.IsValid)
                         {
-                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            fileToUser.Login = enumer.Current;
                             parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendPhotoToUserAsync(fileToUser));
                         }
                         if (!enumer.MoveNext())
@@ -134,7 +134,7 @@ namespace ImpulseAPI.Controllers
                         userCheckResults.Add(userCheckResult);
                         if (userCheckResult.IsValid)
                         {
-                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            fileToUser.Login = enumer.Current;
                             parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendPhotoToUserAsync(fileToUser));
                         }
                     } while (enumer.MoveNext());
@@ -151,8 +151,8 @@ namespace ImpulseAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            UserCheckResult userCheckResult;
-            List<UserCheckResult> userCheckResults = new List<UserCheckResult>();
+            UserCheckResultDto userCheckResult;
+            List<UserCheckResultDto> userCheckResults = new List<UserCheckResultDto>();
 
             string path = await SaveFileAsync(model.File);
             ISocialProvider provider = _serviceAccessor(model.Provider);
@@ -167,7 +167,7 @@ namespace ImpulseAPI.Controllers
                 Priority = model.Priority
             };
 
-            using (IEnumerator<string> enumer = model.EmailOrUserNumbers.GetEnumerator())
+            using (IEnumerator<string> enumer = model.Logins.GetEnumerator())
             {
                 if (enumer.MoveNext())
                 {
@@ -178,7 +178,7 @@ namespace ImpulseAPI.Controllers
                         userCheckResults.Add(userCheckResult);
                         if (userCheckResult.IsValid)
                         {
-                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            fileToUser.Login = enumer.Current;
                             parentIds[model.Provider] = BackgroundJob.Enqueue(() => provider.SendFileToUserAsync(fileToUser));
                         }
                         if (!enumer.MoveNext())
@@ -191,7 +191,7 @@ namespace ImpulseAPI.Controllers
                         userCheckResults.Add(userCheckResult);
                         if (userCheckResult.IsValid)
                         {
-                            fileToUser.EmailOrUserNumber = enumer.Current;
+                            fileToUser.Login = enumer.Current;
                             parentIds[model.Provider] = BackgroundJob.ContinueWith(parentIds[model.Provider], () => provider.SendFileToUserAsync(fileToUser));
                         }
                     } while (enumer.MoveNext());
@@ -210,7 +210,7 @@ namespace ImpulseAPI.Controllers
 
             await _serviceAccessor(model.Provider).AddUserToContactsAsync(new UserInfoDto
             {
-                UserNumber = model.UserNumber,
+                Login = model.Login,
                 FirstName = model.FirstName,
                 LastName = model.LastName
             });
@@ -292,7 +292,7 @@ namespace ImpulseAPI.Controllers
 
             await _serviceAccessor(model.Provider).AddUserToChannelAsync(new UserManipulationInChannelOrGroupDto
             {
-                UserNumber = model.UserNumber,
+                Login = model.Login,
                 Title = model.Title
             });
 
@@ -308,7 +308,7 @@ namespace ImpulseAPI.Controllers
 
             await _serviceAccessor(model.Provider).DeleteUserFromChannelAsync(new UserManipulationInChannelOrGroupDto
             {
-                UserNumber = model.UserNumber,
+                Login = model.Login,
                 Title = model.Title
             });
 
@@ -417,7 +417,7 @@ namespace ImpulseAPI.Controllers
 
             await _serviceAccessor(model.Provider).AddUserToGroupAsync(new UserManipulationInChannelOrGroupDto
             {
-                UserNumber = model.UserNumber,
+                Login = model.Login,
                 Title = model.Title
             });
 
@@ -433,7 +433,7 @@ namespace ImpulseAPI.Controllers
 
             await _serviceAccessor(model.Provider).DeleteUserFromGroupAsync(new UserManipulationInChannelOrGroupDto
             {
-                UserNumber = model.UserNumber,
+                Login = model.Login,
                 Title = model.Title
             });
 

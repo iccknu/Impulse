@@ -4,7 +4,7 @@ namespace DataTransferObjects.Social
 {
     public class FileToUserDto
     {
-        public string EmailOrUserNumber { get; set; }
+        public string Login { get; set; }
         public string SenderName { get; set; }
         public string Subject { get; set; }
         public string Caption { get; set; }

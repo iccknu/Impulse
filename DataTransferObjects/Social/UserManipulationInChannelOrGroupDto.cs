@@ -2,7 +2,7 @@
 {
     public class UserManipulationInChannelOrGroupDto
     {
-        public string UserNumber { get; set; }
+        public string Login { get; set; }
         public string Title { get; set; }
     }
 }

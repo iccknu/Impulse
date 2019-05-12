@@ -51,55 +51,13 @@ namespace Providers
 
         //    t.Wait();
         //}
-
-        //class TBot
-        //{
-        //    private readonly TelegramBotClient telegramBot;
-
-        //    public TBot()
-        //    {
-        //        string botToken = ConfigurationManager.AppSettings["BotToken"];
-        //        if (string.IsNullOrEmpty(botToken))
-        //            throw new Exception(string.Format(appConfigMsgWarning, "BotToken"));
-
-        //        telegramBot = new TelegramBotClient(botToken);
-        //    }
-
-        //    public async Task SendMessageAsync(string chatId, string message)
-        //    {
-        //        await telegramBot.SendTextMessageAsync(
-        //            chatId,
-        //            message);
-        //    }
-        //    public async Task SendPhotoAsync(string chatId, string path, string name, string caption)
-        //    {
-        //        Stream file = new FileStream(path + name, FileMode.Open);
-        //        FileToSend photo = new FileToSend(name, file);
-
-        //        await telegramBot.SendPhotoAsync(
-        //            chatId,
-        //            photo,
-        //            caption);
-
-        //    }
-        //    public async Task SendFileAsync(string chatId, string path, string name, string caption)
-        //    {
-        //        Stream file = new FileStream(path + name, FileMode.Open);
-        //        FileToSend document = new FileToSend(name, file);
-        //        await telegramBot.SendDocumentAsync(
-        //            chatId,
-        //            document,
-        //            caption);
-
-        //    }
-        //}
         #region User Methods
         public async Task SendMessageToUserAsync(MessageToUserDto model)
         {
             if (string.IsNullOrWhiteSpace(model.Message))
                 throw new ArgumentException("Message can't be empty");
 
-            TLUser user = await GetUserAsync(model.EmailOrUserNumber);
+            TLUser user = await GetUserAsync(model.Login);
             await client.SendMessageAsync(new TLInputPeerUser() {
                 UserId = user.Id
             }, MessageBuilder(model.SenderName, model.Subject, model.Message));
@@ -108,7 +66,7 @@ namespace Providers
 
         public async Task SendFileToUserAsync(FileToUserDto model)
         {
-            TLUser user = await GetUserAsync(model.EmailOrUserNumber);
+            TLUser user = await GetUserAsync(model.Login);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedDocument(
                     new TLInputPeerUser() { UserId = user.Id },
@@ -127,7 +85,7 @@ namespace Providers
 
         public async Task SendPhotoToUserAsync(FileToUserDto model)
         {
-            TLUser user = await GetUserAsync(model.EmailOrUserNumber);
+            TLUser user = await GetUserAsync(model.Login);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
             await client.SendUploadedPhoto(new TLInputPeerUser() {
                 UserId = user.Id
@@ -137,16 +95,16 @@ namespace Providers
 
         public async Task AddUserToContactsAsync(UserInfoDto model)
         {
-            if (string.IsNullOrWhiteSpace(model.UserNumber))
-                throw new ArgumentException("User number can't be empty");
+            if (string.IsNullOrWhiteSpace(model.Login))
+                throw new ArgumentException("Login can't be empty");
 
-            if (!Regex.Match(model.UserNumber, phoneNumberPattern).Success)
-                throw new ArgumentException("User number not correct: " + model.UserNumber);
+            if (!Regex.Match(model.Login, phoneNumberPattern).Success)
+                throw new ArgumentException("Login is not a valid phone number: " + model.Login);
 
             // this is because the contacts in the address come without the "+" prefix
-            var normalizedNumber = model.UserNumber.StartsWith("+") ?
-                model.UserNumber.Substring(1, model.UserNumber.Length - 1) :
-                model.UserNumber;
+            var normalizedNumber = model.Login.StartsWith("+") ?
+                model.Login.Substring(1, model.Login.Length - 1) :
+                model.Login;
 
             if (string.IsNullOrWhiteSpace(model.FirstName))
                 throw new ArgumentException("First name can't be empty");
@@ -211,7 +169,7 @@ namespace Providers
 
         public async Task AddUserToChannelAsync(UserManipulationInChannelOrGroupDto model)
         {
-            var user = await GetUserAsync(model.UserNumber);
+            var user = await GetUserAsync(model.Login);
             var channel = await GetChannelAsync(model.Title);
 
             //generate request of adding
@@ -237,7 +195,7 @@ namespace Providers
 
         public async Task DeleteUserFromChannelAsync(UserManipulationInChannelOrGroupDto model)
         {
-            var user = await GetUserAsync(model.UserNumber);
+            var user = await GetUserAsync(model.Login);
             var channel = await GetChannelAsync(model.Title);
 
             //generate request of deleting
@@ -341,7 +299,7 @@ namespace Providers
 
         public async Task AddUserToGroupAsync(UserManipulationInChannelOrGroupDto model)
         {
-            var user = await GetUserAsync(model.UserNumber);
+            var user = await GetUserAsync(model.Login);
             var group = await GetGroupAsync(model.Title);
 
             //generate request of adding
@@ -367,7 +325,7 @@ namespace Providers
 
         public async Task DeleteUserFromGroupAsync(UserManipulationInChannelOrGroupDto model)
         {
-            var user = await GetUserAsync(model.UserNumber);
+            var user = await GetUserAsync(model.Login);
             var group = await GetGroupAsync(model.Title);
 
             //generate request of deleting
@@ -427,7 +385,7 @@ namespace Providers
         }
         #endregion
 
-        public async Task<UserCheckResult> UserCheck(string emailOrUserNumber)
+        public async Task<UserCheckResultDto> UserCheck(string emailOrUserNumber)
         {
             bool isValid = true;
             string errorMessage = null;
@@ -441,9 +399,9 @@ namespace Providers
                 errorMessage = ex.Message;
             }
 
-            return new UserCheckResult
+            return new UserCheckResultDto
             {
-                EmailOrUserNumber = emailOrUserNumber,
+                Login = emailOrUserNumber,
                 IsValid = isValid,
                 ErrorMessage = errorMessage
             };
@@ -453,10 +411,10 @@ namespace Providers
         private async Task<TLUser> GetUserAsync(string userNumber)
         {
             if (string.IsNullOrWhiteSpace(userNumber))
-                throw new ArgumentException("User number can't be empty.");
+                throw new ArgumentException("Login can't be empty.");
 
             if (!Regex.Match(userNumber, phoneNumberPattern).Success)
-                throw new ArgumentException("User number not correct: " + userNumber);
+                throw new ArgumentException("Login is not a valid phone number: " + userNumber);
 
             // this is because the contacts in the address come without the "+" prefix
             var normalizedNumber = userNumber.StartsWith("+") ?

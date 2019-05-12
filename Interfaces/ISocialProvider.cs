@@ -26,6 +26,6 @@ namespace Interfaces
         Task CreateGroupAsync(ChannelOrGroupCreationDto model);
         Task RemoveGroupAsync(string title);
 
-        Task<UserCheckResult> UserCheck(string emailOrUserNumber);
+        Task<UserCheckResultDto> UserCheck(string emailOrUserNumber);
     }
 }
