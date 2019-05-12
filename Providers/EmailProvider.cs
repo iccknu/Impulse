@@ -177,6 +177,9 @@ namespace Providers
             => throw new NotImplementedException("This method is not supported in email");
         #endregion
 
+        public async Task RegisterService(string code)
+            => throw new NotImplementedException("This method is not supported in email");
+
         public async Task<UserCheckResultDto> UserCheck(string login)
         {
             bool isEmailValid = IsValidEmail(login);

@@ -34,6 +34,14 @@ namespace ImpulseAPI.Controllers
             }
         }
 
+        //POST: api/Social/RegisterTelegramService
+        [HttpPost("[action]/{code?}")]
+        public async Task<IActionResult> RegisterTelegramService([FromRoute]string code = null)
+        {
+            await _serviceAccessor(Provider.Telegram).RegisterService(code);
+            return Ok();
+        }
+
         #region User Methods
         //POST: api/Social/SendMessageToUsersAsync
         [HttpPost("[action]")]

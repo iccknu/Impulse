@@ -22,6 +22,7 @@ namespace Providers
         private readonly TelegramConfigurationsDto _telegramConfigurations;
         private readonly TelegramClient client;
         private readonly int DileyTime;
+        private string Hash;
 
         public TelegramProvider(IOptions<TelegramConfigurationsDto> telegramConfigurations)
         {
@@ -33,24 +34,6 @@ namespace Providers
 
         private const string phoneNumberPattern = @"^(\+?380)(50|66|95|99|63|73|93|91|92|94|67|68|96|97|98|39)[0-9]{7}$";
 
-        //public void RegisterService()
-        //{
-        //    var client = TClient.Client;
-        //    string phoneNumber = ConfigurationManager.AppSettings["PhoneNumber"];
-        //    if (string.IsNullOrEmpty(phoneNumber))
-        //        throw new ArgumentException(string.Format(appConfigMsgWarning, "PhoneNumber"));
-
-        //    //Task only for debug
-        //    Task t = Task.Run(async () =>
-        //    {
-        //        var hash = client.SendCodeRequestAsync(phoneNumber).Result;
-
-        //        string code = "Insert your code here in debug";
-        //        await client.MakeAuthAsync(phoneNumber, hash, code);
-        //    });
-
-        //    t.Wait();
-        //}
         #region User Methods
         public async Task SendMessageToUserAsync(MessageToUserDto model)
         {
@@ -58,7 +41,8 @@ namespace Providers
                 throw new ArgumentException("Message can't be empty");
 
             TLUser user = await GetUserAsync(model.Login);
-            await client.SendMessageAsync(new TLInputPeerUser() {
+            await client.SendMessageAsync(new TLInputPeerUser()
+            {
                 UserId = user.Id
             }, MessageBuilder(model.SenderName, model.Subject, model.Message));
             Thread.Sleep(DileyTime);
@@ -87,7 +71,8 @@ namespace Providers
         {
             TLUser user = await GetUserAsync(model.Login);
             TLAbsInputFile fileResult = await UpLoadFileAsync(model.Path, model.Name);
-            await client.SendUploadedPhoto(new TLInputPeerUser() {
+            await client.SendUploadedPhoto(new TLInputPeerUser()
+            {
                 UserId = user.Id
             }, fileResult, MessageBuilder(model.SenderName, model.Subject, model.Caption));
             Thread.Sleep(DileyTime);
@@ -130,7 +115,8 @@ namespace Providers
                 throw new ArgumentException("Message can't be empty");
 
             var channel = await GetChannelAsync(model.Title);
-            await client.SendMessageAsync(new TLInputPeerChannel() {
+            await client.SendMessageAsync(new TLInputPeerChannel()
+            {
                 ChannelId = channel.Id,
                 AccessHash = channel.AccessHash.Value
             }, MessageBuilder(model.SenderName, model.Subject, model.Message));
@@ -260,7 +246,8 @@ namespace Providers
                 throw new ArgumentException("Message can't be empty");
 
             var group = await GetGroupAsync(model.Title);
-            await client.SendMessageAsync(new TLInputPeerChannel() {
+            await client.SendMessageAsync(new TLInputPeerChannel()
+            {
                 ChannelId = group.Id,
                 AccessHash = group.AccessHash.Value
             }, MessageBuilder(model.SenderName, model.Subject, model.Message));
@@ -384,6 +371,27 @@ namespace Providers
             await client.SendRequestAsync<object>(request);
         }
         #endregion
+
+        public async Task RegisterService(string code)
+        {
+            string phoneNumber = _telegramConfigurations.PhoneNumber;
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                throw new ArgumentException("Phone number can't be empty.");
+
+            if (!Regex.Match(phoneNumber, phoneNumberPattern).Success)
+                throw new ArgumentException("Phone number is not a valid: " + phoneNumber);
+
+            if (string.IsNullOrEmpty(code))
+                Hash = client.SendCodeRequestAsync(phoneNumber).Result;
+            else
+            {
+                if (string.IsNullOrWhiteSpace(Hash))
+                    throw new ArgumentException("Hash is empty. Make a request without parameters first.");
+
+                await client.MakeAuthAsync(phoneNumber, Hash, code);
+            }
+        }
 
         public async Task<UserCheckResultDto> UserCheck(string emailOrUserNumber)
         {

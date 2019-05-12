@@ -201,6 +201,9 @@ namespace Providers
         }
         #endregion
 
+        public async Task RegisterService(string code)
+            => throw new NotImplementedException("This method is not supported in Slack");
+
         public async Task<UserCheckResultDto> UserCheck(string emailOrUserNumber)
         {
             bool isValid = true;
