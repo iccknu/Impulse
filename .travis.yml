@@ -1,0 +1,11 @@
+language: bash
+dist: xenial
+
+services:
+  - docker
+
+before_install:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker build -t zagaria/impulse:latest -f ImpulseAPI/Dockerfile .
+  - docker push zagaria/impulse:latest
+  
