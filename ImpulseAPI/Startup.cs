@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DataTransferObjects.Configurations;
+﻿using DataTransferObjects.Configurations;
 using Enums;
 using Hangfire;
 using ImpulseAPI.Extensions;
@@ -16,6 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Providers;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace ImpulseAPI
 {
@@ -83,7 +82,12 @@ namespace ImpulseAPI
 
             services.AddMvc();
 
-            services.AddHangfire(x => x.UseSqlServerStorage("Server=DESKTOP-1D0TUK1\\SQLEXPRESS;Database=Impulse;Trusted_Connection=True;MultipleActiveResultSets=true"));
+            string hostname = Environment.GetEnvironmentVariable("SQLSERVER_HOST");
+            string database = Environment.GetEnvironmentVariable("SQLSERVER_DATABASE");
+            string userId = Environment.GetEnvironmentVariable("SQLSERVER_USER_ID");
+            string password = Environment.GetEnvironmentVariable("SQLSERVER_PASSWORD");
+            services.AddHangfire(x => x.UseSqlServerStorage("Server=" + hostname + ";Database=" + database +
+                ";User Id=" + userId + ";Password=" + password + "; "));
 
             services.Configure<TelegramConfigurationsDto>(Configuration.GetSection("services:telegram"));
             services.Configure<SlackConfigurationsDto>(Configuration.GetSection("services:slack"));
