@@ -27,6 +27,11 @@ namespace Providers
         public TelegramProvider(IOptions<TelegramConfigurationsDto> telegramConfigurations)
         {
             _telegramConfigurations = telegramConfigurations.Value;
+            _telegramConfigurations.CheckConfigurationData();
+
+            if (!Regex.Match(_telegramConfigurations.PhoneNumber, phoneNumberPattern).Success)
+                throw new ArgumentException("PhoneNumber is not valid: " + _telegramConfigurations.PhoneNumber);
+
             client = new TelegramClient(_telegramConfigurations.ApiId, _telegramConfigurations.ApiHash);
             client.ConnectAsync().Wait();
             DileyTime = (int)(1000 / _telegramConfigurations.MessagesPerSecond);

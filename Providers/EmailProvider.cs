@@ -22,6 +22,11 @@ namespace Providers
         public EmailProvider(IOptions<EmailConfigurationsDto> emailConfigurations)
         {
             _emailConfigurations = emailConfigurations.Value;
+            _emailConfigurations.CheckConfigurationData();
+
+            if (!IsValidEmail(_emailConfigurations.Email))
+                throw new ArgumentException("Email is not valid: " + _emailConfigurations.Email);
+
             DileyTime = (int)(1000 / _emailConfigurations.MessagesPerSecond);
         }
 

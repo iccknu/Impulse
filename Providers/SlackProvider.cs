@@ -21,6 +21,7 @@ namespace Providers
         public SlackProvider(IOptions<SlackConfigurationsDto> slackConfigurations)
         {
             _slackConfigurations = slackConfigurations.Value;
+            _slackConfigurations.CheckConfigurationData();
             DileyTime = (int)(1000 / _slackConfigurations.MessagesPerSecond);
         }
 
