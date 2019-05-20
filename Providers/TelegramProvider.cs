@@ -23,6 +23,7 @@ namespace Providers
         private readonly TelegramClient client;
         private readonly int DileyTime;
         private string Hash;
+        private TLContacts Contacts; // Storage for contacts, for preventing a lot of request for getting the same contact list
 
         public TelegramProvider(IOptions<TelegramConfigurationsDto> telegramConfigurations)
         {
@@ -110,6 +111,8 @@ namespace Providers
             var request = new TLRequestImportContacts() { Contacts = contacts };
 
             await client.SendRequestAsync<TLImportedContacts>(request);
+
+            Contacts = await client.GetContactsAsync(); // Updating saved contacts
         }
         #endregion
 
@@ -435,9 +438,10 @@ namespace Providers
                 userNumber;
 
             // get available contacts
-            var result = await client.GetContactsAsync();
+            if (Contacts == null)
+                Contacts = await client.GetContactsAsync();
 
-            var user = result.Users
+            var user = Contacts.Users
                 .OfType<TLUser>()
                 .FirstOrDefault(x => x.Phone == normalizedNumber);
 
