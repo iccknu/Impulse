@@ -1,6 +1,7 @@
 ﻿using DataTransferObjects.Configurations;
 using Enums;
 using Hangfire;
+using Hangfire.PostgreSql;
 using ImpulseAPI.Extensions;
 using Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -82,12 +83,12 @@ namespace ImpulseAPI
 
             services.AddMvc();
 
-            string hostname = Environment.GetEnvironmentVariable("SQLSERVER_HOST");
-            string database = Environment.GetEnvironmentVariable("SQLSERVER_DATABASE");
-            string userId = Environment.GetEnvironmentVariable("SQLSERVER_USER_ID");
-            string password = Environment.GetEnvironmentVariable("SQLSERVER_PASSWORD");
-            services.AddHangfire(x => x.UseSqlServerStorage("Server=" + hostname + ";Database=" + database +
-                ";User Id=" + userId + ";Password=" + password + "; "));
+            string hostname = Environment.GetEnvironmentVariable("POSTGRESQL_HOST");
+            string database = Environment.GetEnvironmentVariable("POSTGRESQL_DATABASE");
+            string userId = Environment.GetEnvironmentVariable("POSTGRESQL_USER_ID");
+            string password = Environment.GetEnvironmentVariable("POSTGRESQL_PASSWORD");
+            services.AddHangfire(x => x.UsePostgreSqlStorage("Host=" + hostname + ";Database=" + database +
+                ";User ID=" + userId + ";Password=" + password + ";Port=5432;"));
 
             services.Configure<TelegramConfigurationsDto>(Configuration.GetSection("services:telegram"));
             services.Configure<SlackConfigurationsDto>(Configuration.GetSection("services:slack"));
