@@ -94,5 +94,8 @@ docker-compose build
 docker-compose up -d
 ```
 
+# Hangfire Dashboard
+For enabling Hangfire dashboard you need to go to `\ImpulseAPI\Extensions\MyAuthorizationFilter.cs` file, comment `httpContext.User.Identity.IsAuthenticated;` and uncomment `true;`. **But be careful this will gives access to dashboard page to everyone. So use it for debug only.** After it, dashboard page accessible by `/hangfire`.
+
 # Now, when you are ready
 For getting detailed information about API's methods, you can go to `/swagger` page.
