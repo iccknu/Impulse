@@ -10,7 +10,7 @@ At the moment we support next providers:
 ## API set up
 For using this API you have to provide only two things:
 1. [servicesettings.json](https://github.com/iccknu/Impulse/blob/0.0.1-dev/ImpulseAPI/servicesettings.json) (You can provide only those providers which will be used);
-2. Connection string to SQL Server (for now it's only one supported storage), by using environment variables: SQLSERVER_HOST, SQLSERVER_DATABASE, SQLSERVER_USER_ID and SQLSERVER_PASSWORD.
+2. Connection string to PostgreSQL (for now it's only one supported storage), by using environment variables: POSTGRESQL_HOST, POSTGRESQL_DATABASE, POSTGRESQL_USER_ID and POSTGRESQL_PASSWORD.
 
 ## How to write servicesettings.json
 Template of full version of file you can find [here](https://github.com/iccknu/Impulse/blob/0.0.1-dev/ImpulseAPI/servicesettings.json). And now let's see how to get all needed information for each provider.
@@ -63,8 +63,8 @@ Just register an account at any email service, and find required information abo
 ---
 Field `messagesPerSecond` is positive float number that used for calculating delay between sending direct messages to users, because every provider has a different restrictions for detecting spam.
 
-## SQL Server
-Everything that you need to do with database, it's create it and specify information about connection in environment variables: SQLSERVER_HOST, SQLSERVER_DATABASE, SQLSERVER_USER_ID and SQLSERVER_PASSWORD.
+## PostgreSQL
+Everything that you need to do with database, it's create it and specify information about connection in environment variables: POSTGRESQL_HOST, POSTGRESQL_DATABASE, POSTGRESQL_USER_ID and POSTGRESQL_PASSWORD.
 
 ## Last preparation for Telegram provider
 If you want to use Telegram provider then one more step required.
@@ -74,17 +74,24 @@ Everything that you need to do, it's run API, then make two requests to `Registe
 
 # Docker
 Also is possible to run this API on Docker, for it you need:
-1. (Optional) Run SQL Server and create database there:
+1. (Optional) Run PostgreSQL:
 ```powershell
-docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Testing123' -p 1433:1433 --name sqlserver -d microsoft/mssql-server-linux
+docker run -e POSTGRES_USER=sa -e POSTGRES_PASSWORD=Testing123 -e POSTGRES_DB=Impulse -p 5432:5432 --name postgresql -d postgres
 ```
 2. Build docker image (from solution folder):
 ```powershell
 docker build -t impulse -f .\ImpulseAPI\Dockerfile .
 ```
-3. Run this image (use `--link sqlserver` only if you run sql server in docker too):
+3. Run this image (use `--link postgresql` only if you run PostgreSQL in docker too):
 ```powershell
-docker run -it --name impulseapi -p 50000:50000 --link sqlserver -e SQLSERVER_HOST=sqlserver -e SQLSERVER_DATABASE=Impulse -e SQLSERVER_USER_ID=sa -e SQLSERVER_PASSWORD=Testing123 -v "$pwd\ImpulseApi\servicesettings.json:/app/servicesettings.json" -d impulse
+docker run -it --name impulseapi -p 50000:50000 --link postgresql -e POSTGRESQL_HOST=postgresql -e POSTGRESQL_DATABASE=Impulse -e POSTGRESQL_USER_ID=sa -e POSTGRESQL_PASSWORD=Testing123 -v "$pwd\ImpulseApi\servicesettings.json:/app/servicesettings.json" -d impulse
+```
+
+## Docker Compose
+Or you can change environment variables in `docker-compose.yml` file and just run next two commands (from solution folder):
+```powershell
+docker-compose build
+docker-compose up -d
 ```
 
 # Now, when you are ready
