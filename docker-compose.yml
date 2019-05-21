@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: ImpulseAPI/Dockerfile
     ports:
-      - "5000:50000"
+      - "50000:50000"
     environment:
     - POSTGRESQL_HOST=postgresql
     - POSTGRESQL_DATABASE=Impulse
