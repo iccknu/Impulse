@@ -17,6 +17,7 @@ namespace Providers
     {
         private readonly SlackConfigurationsDto _slackConfigurations;
         private readonly int DileyTime;
+        private JObject UsersList; // Storage for contacts, for preventing a lot of request for getting the same contact list
 
         public SlackProvider(IOptions<SlackConfigurationsDto> slackConfigurations)
         {
@@ -68,6 +69,7 @@ namespace Providers
                 using (FormUrlEncodedContent content = new FormUrlEncodedContent(sendModel))
                 {
                     await httpClient.PostAsync(uri, content);
+                    UsersList = null; // Removing previous users list
                 }
             }
         }
@@ -233,21 +235,23 @@ namespace Providers
             if (string.IsNullOrWhiteSpace(login))
                 throw new ArgumentException("Login can't be empty.");
 
-            JToken user = null;
-            var uri = new Uri(_slackApiLink + "users.list");
-            using (HttpClient _httpClient = new HttpClient())
+            if (UsersList == null)
             {
-                var model = new List<KeyValuePair<string, string>>
+                var uri = new Uri(_slackApiLink + "users.list");
+                using (HttpClient _httpClient = new HttpClient())
+                {
+                    var model = new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("token", _slackConfigurations.UserToken),
                 };
-                using (FormUrlEncodedContent content = new FormUrlEncodedContent(model))
-                {
-                    var response = await _httpClient.PostAsync(uri, content);
-                    var jo = JObject.Parse(await response.Content.ReadAsStringAsync());
-                    user = (jo["members"] as JArray).FirstOrDefault(x => x.Value<string>("name") == login);
+                    using (FormUrlEncodedContent content = new FormUrlEncodedContent(model))
+                    {
+                        var response = await _httpClient.PostAsync(uri, content);
+                        UsersList = JObject.Parse(await response.Content.ReadAsStringAsync());
+                    }
                 }
             }
+            JToken user = (UsersList["members"] as JArray).FirstOrDefault(x => x.Value<string>("name") == login);
 
             if (user == null)
             {
