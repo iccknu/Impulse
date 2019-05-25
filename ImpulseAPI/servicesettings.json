@@ -1,0 +1,22 @@
+﻿{
+  "services": {
+    "telegram": {
+      "apiId": <(int) api id>,
+      "apiHash": <(string) api hash>,
+      "phoneNumber": <(string) phone number registered in telegram>,
+      "messagesPerSecond": <(float) amount of messages per second>
+    },
+    "slack": {
+      "userToken": <(string) user legacy token>,
+      "messagesPerSecond": <(float) amount of messages per second>
+    },
+    "email": {
+      "smtpServer": <(string) smtp server>,
+      "smtpPort": <(int) smtp port>,
+      "userName": <(string) login of email (part before @)>,
+      "password": <(string) password>,
+      "email": <(string) full email>,
+      "messagesPerSecond": <(float) amount of messages per second>
+    }
+  }
+}

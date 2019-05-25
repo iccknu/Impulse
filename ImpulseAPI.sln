@@ -3,9 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2015
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImpulseAPI", "ImpulseAPI\ImpulseAPI.csproj", "{BA7D25BD-ACA9-4403-AD41-55889263386C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImpulseAPI", "ImpulseAPI\ImpulseAPI.csproj", "{BA7D25BD-ACA9-4403-AD41-55889263386C}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{D417987E-223D-4DAE-BA63-187E1857BEE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enums", "Enums\Enums.csproj", "{D2C4A0D4-26EE-4720-AC93-FEF0D6DB9CC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Providers", "Providers\Providers.csproj", "{7820DC0A-716D-4341-A616-81E30FB762FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces", "Interfaces\Interfaces.csproj", "{875F3F45-9BE0-46D9-80E7-F3B595281219}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataTransferObjects", "DataTransferObjects\DataTransferObjects.csproj", "{D0F524EF-1076-4F7E-B5CF-F2776D504AEB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +29,22 @@ Global
 		{D417987E-223D-4DAE-BA63-187E1857BEE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D417987E-223D-4DAE-BA63-187E1857BEE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D417987E-223D-4DAE-BA63-187E1857BEE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2C4A0D4-26EE-4720-AC93-FEF0D6DB9CC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2C4A0D4-26EE-4720-AC93-FEF0D6DB9CC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2C4A0D4-26EE-4720-AC93-FEF0D6DB9CC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2C4A0D4-26EE-4720-AC93-FEF0D6DB9CC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7820DC0A-716D-4341-A616-81E30FB762FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7820DC0A-716D-4341-A616-81E30FB762FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7820DC0A-716D-4341-A616-81E30FB762FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7820DC0A-716D-4341-A616-81E30FB762FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{875F3F45-9BE0-46D9-80E7-F3B595281219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{875F3F45-9BE0-46D9-80E7-F3B595281219}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{875F3F45-9BE0-46D9-80E7-F3B595281219}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{875F3F45-9BE0-46D9-80E7-F3B595281219}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0F524EF-1076-4F7E-B5CF-F2776D504AEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0F524EF-1076-4F7E-B5CF-F2776D504AEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0F524EF-1076-4F7E-B5CF-F2776D504AEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0F524EF-1076-4F7E-B5CF-F2776D504AEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

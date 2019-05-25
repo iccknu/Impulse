@@ -1,10 +1,27 @@
-version: '3'
+version: '3.7'
 
 services:
   impulseapi:
-    image: impulseapi
+    image: impulse
     build:
       context: .
       dockerfile: ImpulseAPI/Dockerfile
-  mysql:
-    image: mariadb:10.3.5
+    ports:
+      - "50000:50000"
+    environment:
+    - POSTGRESQL_HOST=postgresql
+    - POSTGRESQL_DATABASE=Impulse
+    - POSTGRESQL_USER_ID=sa
+    - POSTGRESQL_PASSWORD=Testing123
+    volumes:
+      - .\ImpulseApi\servicesettings.json:/app/servicesettings.json
+    links:
+      - postgresql
+  postgresql:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+    - POSTGRES_USER=sa
+    - POSTGRES_PASSWORD=Testing123
+    - POSTGRES_DB=Impulse

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ImpulseAPI</name>
+    </assembly>
+    <members>
+        <member name="M:ImpulseAPI.Controllers.SocialController.GetProviders">
+            <summary>
+            Get all provider names (In methods possible to use both string names and indexes)
+            </summary>
+            <returns>Array of all provider names</returns>
+        </member>
+        <member name="M:ImpulseAPI.Controllers.SocialController.RegisterTelegramService(System.String)">
+            <summary>
+            Authorizing the user for getting more access to API 
+            </summary>
+            <param name="code">Code that will be send on your phone after first call without parameter</param>
+            <returns></returns>
+        </member>
+        <member name="M:ImpulseAPI.Controllers.SocialController.AddUserToContactsAsync(ImpulseAPI.Models.Social.UserInfoModel)">
+            <summary>
+            Before making any manipulations with users, you need to add them in your contact list
+            </summary>
+            <param name="model">Model with information needed for provider</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -1,15 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>D:\Repositories\Impulse\ImpulseAPI\ImpulseAPI.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>D:\Repositories\Impulse\ImpulseAPI\ImpulseAPI.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\Files\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Hangfire" Version="1.6.22" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.6.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="2.3.0" />
@@ -17,6 +27,13 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataTransferObjects\DataTransferObjects.csproj" />
+    <ProjectReference Include="..\Enums\Enums.csproj" />
+    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+    <ProjectReference Include="..\Providers\Providers.csproj" />
   </ItemGroup>
 
 </Project>

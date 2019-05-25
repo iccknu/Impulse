@@ -1,17 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DataTransferObjects.Configurations;
+using Enums;
+using Hangfire;
+using Hangfire.PostgreSql;
+using ImpulseAPI.Extensions;
+using Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Providers;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace ImpulseAPI
 {
@@ -34,6 +38,8 @@ namespace ImpulseAPI
 
             app.UseAuthentication();
 
+            app.ConfigureExceptionHandler();
+
             app.UseMvc();
             app.UseStaticFiles();
 
@@ -45,6 +51,16 @@ namespace ImpulseAPI
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Impulse");
             });
 
+            app.UseHangfireServer();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new MyAuthorizationFilter() }
+            });
+
+            app.Run(async (context) =>
+            {
+                await context.Response.WriteAsync("Default page.");
+            });
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -67,13 +83,43 @@ namespace ImpulseAPI
 
             services.AddMvc();
 
+            string hostname = Environment.GetEnvironmentVariable("POSTGRESQL_HOST");
+            string database = Environment.GetEnvironmentVariable("POSTGRESQL_DATABASE");
+            string userId = Environment.GetEnvironmentVariable("POSTGRESQL_USER_ID");
+            string password = Environment.GetEnvironmentVariable("POSTGRESQL_PASSWORD");
+            services.AddHangfire(x => x.UsePostgreSqlStorage("Host=" + hostname + ";Database=" + database +
+                ";User ID=" + userId + ";Password=" + password + ";Port=5432;"));
+
+            services.Configure<TelegramConfigurationsDto>(Configuration.GetSection("services:telegram"));
+            services.Configure<SlackConfigurationsDto>(Configuration.GetSection("services:slack"));
+            services.Configure<EmailConfigurationsDto>(Configuration.GetSection("services:email"));
+
+            // services
+            services.AddSingleton(typeof(TelegramProvider));
+            services.AddSingleton(typeof(SlackProvider));
+            services.AddSingleton(typeof(EmailProvider));
+
+            // provider selector
+            services.AddTransient<Func<Provider, ISocialProvider>>(serviceProvider => key =>
+            {
+                switch (key)
+                {
+                    case Provider.Telegram:
+                        return serviceProvider.GetService<TelegramProvider>();
+                    case Provider.Slack:
+                        return serviceProvider.GetService<SlackProvider>();
+                    case Provider.Email:
+                        return serviceProvider.GetService<EmailProvider>();
+                    default:
+                        throw new KeyNotFoundException();
+                }
+            });
+
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Impulse", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new ApiKeyScheme { In = "header", Description = "Please enter JWT with Bearer into field", Name = "Authorization", Type = "apiKey" });
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
-                { "Bearer", Enumerable.Empty<string>() },
-                });
+                c.SwaggerDoc("v1", new Info { Title = "Impulse", Version = "v1",
+                    Description = "Program for sending notifications through different communication channels (such as Telegram, Slack and similar)." });
+                c.IncludeXmlComments(AppDomain.CurrentDomain.BaseDirectory + "ImpulseAPI.xml");
             });
         }
     }
